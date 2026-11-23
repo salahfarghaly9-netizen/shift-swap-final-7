@@ -65,6 +65,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     const shift = await Shift.findById(req.body.shiftId);
     if (!shift) return res.status(404).json({success:false,message:'Shift not found'});
     if (shift.user.toString()!==req.user._id.toString()) return res.status(403).json({success:false,message:"This shift doesn't belong to you"});
+    if(shift.type==='AnnualLeave')return res.status(400).json({success:false,message:'Annual leave cannot be offered for coverage'});
     if (shift.status==='Swapped') return res.status(400).json({success:false,message:'Shift already swapped'});
     const existing = await SwapRequest.findOne({requesterShift:shift._id,status:{$in:['Open','Accepted']}});
     if (existing) return res.status(409).json({success:false,message:'An open request already exists for this shift'});
@@ -113,11 +114,23 @@ router.post('/:id/approve', managerOnly, async (req, res) => {
       .populate('requesterShift').populate('requester','name').populate('acceptor','name');
     if (!swap) return res.status(404).json({success:false,message:'Swap not found'});
     if (swap.status!=='Accepted') return res.status(400).json({success:false,message:'Swap must be accepted first'});
-    swap.status='Approved'; swap.reviewedBy=req.user._id; swap.reviewedAt=new Date(); swap.reviewNote=req.body.note||'';
-    await swap.save();
-    if (swap.requesterShift){swap.requesterShift.status='Swapped';await swap.requesterShift.save();}
-    await User.findByIdAndUpdate(swap.requester._id,{$inc:{'swapStats.completed':1}});
-    await User.findByIdAndUpdate(swap.acceptor._id,{$inc:{'swapStats.completed':1}});
+    const mongoose = require('mongoose');
+    const session = await mongoose.startSession();
+    try { await session.withTransaction(async()=>{
+      const current = await SwapRequest.findOne({_id:swap._id,status:'Accepted'}).session(session);
+      if(!current)throw new Error('Request already reviewed.');
+      const target = await User.findOne({_id:swap.acceptor._id,isActive:true}).session(session);
+      const shift = await Shift.findById(swap.requesterShift._id).session(session);
+      if(!target||!shift||String(shift.user)!==String(swap.requester._id))throw new Error('Shift ownership or employee status changed.');
+      const candidates=await Shift.find({user:target._id,_id:{$ne:shift._id}}).session(session);
+      const {overlap}=require('./rosterImport');
+      if(candidates.some(x=>overlap(x,shift)))throw new Error('Acceptor already has an overlapping shift.');
+      shift.user=target._id;shift.status='Confirmed';await shift.save({session});
+      current.status='Approved';current.reviewedBy=req.user._id;current.reviewedAt=new Date();current.reviewNote=req.body.note||'';
+      await current.save({session});
+      await User.updateMany({_id:{$in:[swap.requester._id,target._id]}},{$inc:{'swapStats.completed':1}},{session});
+    }); } finally { await session.endSession(); }
+    swap.status='Approved';
     const msg=`Manager ${req.user.name} approved the swap ✓`;
     await notify(swap.requester._id,'swap_approved','Swap Approved',msg,swap._id);
     await notify(swap.acceptor._id,'swap_approved','Swap Approved',msg,swap._id);
