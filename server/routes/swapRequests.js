@@ -8,6 +8,8 @@ const { protect, managerOnly } = require('../middleware/auth');
 const router = express.Router();
 router.use(protect);
 
+function visibleSwap(doc,user){if(user.role==='manager')return doc;const s=doc.toObject?doc.toObject():doc;const person=p=>p?{_id:p._id,name:p.name,department:p.department}:null;const shift=p=>p?{_id:p._id,date:p.date,startTime:p.startTime,endTime:p.endTime,type:p.type,department:p.department,workMode:p.workMode,status:p.status}:null;return {_id:s._id,requester:person(s.requester),acceptor:person(s.acceptor),requesterShift:shift(s.requesterShift),acceptorShift:shift(s.acceptorShift),status:s.status,mode:s.mode,reason:s.reason,availableTimes:s.availableTimes,urgency:s.urgency,createdAt:s.createdAt,updatedAt:s.updatedAt};}
+
 const {notify,cairoStart}=require('../services/notificationService');
 
 router.get('/stats/summary', managerOnly, async (req, res) => {
@@ -31,6 +33,7 @@ router.get('/', async (req, res) => {
     if (req.query.urgency) filter.urgency=req.query.urgency;
     if (req.query.mine==='true') filter.requester=req.user._id;
     if (!req.query.status&&req.query.mine!=='true') filter.status='Open';
+    if(req.user.role!=='manager'){filter.$or=[{requester:req.user._id},{acceptor:req.user._id},{status:'Open',requesterShift:{$in:(await Shift.find({department:req.user.department}).select('_id')).map(s=>s._id)}}];}
     const page=Math.max(1,parseInt(req.query.page)||1);
     const limit=Math.min(50,parseInt(req.query.limit)||20);
     const [swaps,total] = await Promise.all([
@@ -41,7 +44,7 @@ router.get('/', async (req, res) => {
         .sort({createdAt:-1}).skip((page-1)*limit).limit(limit),
       SwapRequest.countDocuments(filter)
     ]);
-    res.json({success:true, total, page, pages:Math.ceil(total/limit), swaps});
+    res.json({success:true, total, page, pages:Math.ceil(total/limit), swaps:swaps.map(sw=>visibleSwap(sw,req.user))});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
 
@@ -52,7 +55,8 @@ router.get('/:id', async (req, res) => {
       .populate('acceptor','name email department')
       .populate('reviewedBy','name').populate('requesterShift').populate('acceptorShift');
     if (!swap) return res.status(404).json({success:false,message:'Swap not found'});
-    res.json({success:true, swap});
+    if(req.user.role!=='manager'&&String(swap.requester?._id)!==String(req.user._id)&&String(swap.acceptor?._id)!==String(req.user._id)&&!(swap.status==='Open'&&swap.requesterShift?.department===req.user.department))return res.status(403).json({success:false,message:'Swap is not available to you.'});
+    res.json({success:true, swap:visibleSwap(swap,req.user)});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
 
@@ -64,7 +68,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     if (!shift) return res.status(404).json({success:false,message:'Shift not found'});
     if (shift.user.toString()!==req.user._id.toString()) return res.status(403).json({success:false,message:"This shift doesn't belong to you"});
     if(cairoStart(shift)<=new Date())return res.status(400).json({success:false,message:'Shift has already started.'});
-    if(shift.type==='AnnualLeave')return res.status(400).json({success:false,message:'Annual leave cannot be offered for coverage'});
+    if(['AnnualLeave','SickLeave','Training'].includes(shift.type))return res.status(400).json({success:false,message:'Annual leave cannot be offered for coverage'});
     if (shift.status==='Swapped') return res.status(400).json({success:false,message:'Shift already swapped'});
     if(await require('../models/MarketOffer').exists({shift:shift._id,status:{$in:['Open','Matched']}}))return res.status(409).json({success:false,message:'This shift has an active market offer.'});
     const existing = await SwapRequest.findOne({$or:[{requesterShift:shift._id},{acceptorShift:shift._id}],status:{$in:['Open','Proposed','Accepted']}});
@@ -77,7 +81,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     shift.status='NeedsCoverage'; await shift.save();
     await User.findByIdAndUpdate(req.user._id,{$inc:{'swapStats.sent':1}});
     const populated = await swap.populate([{path:'requester',select:'name department'},{path:'requesterShift'}]);
-    for(const u of await User.find({isActive:true}))await notify(u._id,'swap_offer','New exchange offer',req.user.name+' offered a shift for exchange. Review available offers.',swap._id);
+    for(const u of await User.find({isActive:true,$or:[{role:'manager'},{membership:'approved'}]}))await notify(u._id,'swap_offer','New exchange offer',req.user.name+' offered a shift for exchange. Review available offers.',swap._id);
     res.status(201).json({success:true, swap:populated});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
@@ -95,11 +99,12 @@ router.post('/:id/accept', async (req, res) => {
   try {
     const swap = await SwapRequest.findById(req.params.id).populate('requester','name');
     if (!swap) return res.status(404).json({success:false,message:'Swap not found'});
+    const posted=await Shift.findById(swap.requesterShift);if(req.user.role!=='manager'&&posted?.department!==req.user.department)return res.status(403).json({success:false,message:'This offer belongs to another department.'});
     if (swap.status!=='Open') return res.status(400).json({success:false,message:'Swap not open'});
     if (swap.requester._id.toString()===req.user._id.toString()) return res.status(400).json({success:false,message:"Can't accept your own swap"});
     const source=await Shift.findById(swap.requesterShift);if(!source||cairoStart(source)<=new Date())return res.status(409).json({success:false,message:'Shift has already started or was removed.'});
     if(swap.mode==='Exchange'){
-      const offered=await Shift.findOne({_id:req.body.shiftId,user:req.user._id,status:'Confirmed',type:{$ne:'AnnualLeave'}});
+      const offered=await Shift.findOne({_id:req.body.shiftId,user:req.user._id,status:'Confirmed',type:{$nin:['AnnualLeave','SickLeave','Training']}});
       if(offered&&cairoStart(offered)<=new Date())return res.status(400).json({success:false,message:'Choose a future shift.'});
       if(offered&&await require('../models/MarketOffer').exists({shift:offered._id,status:{$in:['Open','Matched']}}))return res.status(409).json({success:false,message:'This shift has an active market offer.'});
       if(!offered) return res.status(400).json({success:false,message:'Choose your own confirmed working shift.'});
@@ -142,14 +147,14 @@ router.post('/:id/approve', managerOnly, async (req, res) => {
     try { await session.withTransaction(async()=>{
       const current = await SwapRequest.findOne({_id:swap._id,status:'Accepted'}).session(session);
       if(!current)throw new Error('Request already reviewed.');
-      const target = await User.findOne({_id:swap.acceptor._id,isActive:true}).session(session);
+      const target = await User.findOne({_id:swap.acceptor._id,isActive:true,$or:[{role:'manager'},{membership:'approved'}]}).session(session);
       const shift = await Shift.findById(swap.requesterShift._id).session(session);
       if(!target||!shift||String(shift.user)!==String(swap.requester._id))throw new Error('Shift ownership or employee status changed.');
       if(cairoStart(shift)<=new Date())throw new Error('Shift has already started.');
       const beforeShift=shift.toObject();
       const other=current.mode==='Exchange'?await Shift.findById(current.acceptorShift).session(session):null;
       const beforeOther=other?.toObject();
-      if(current.mode==='Exchange'&&(!current.consentAt||!other||String(other.user)!==String(target._id)||other.status!=='Confirmed'||other.type==='AnnualLeave'))throw new Error('Both employees must consent to unchanged shifts.');
+      if(current.mode==='Exchange'&&(!current.consentAt||!other||String(other.user)!==String(target._id)||other.status!=='Confirmed'||['AnnualLeave','SickLeave','Training'].includes(other.type)))throw new Error('Both employees must consent to unchanged shifts.');
       if(other&&cairoStart(other)<=new Date())throw new Error('Counter shift has already started.');
       if(other){const snapshot=current.consentSnapshot;const same=(x,y)=>y&&new Date(x.date).getTime()===new Date(y.date).getTime()&&['startTime','endTime','workMode','department','type'].every(k=>x[k]===y[k]);if(!snapshot||!same(shift,snapshot.a)||!same(other,snapshot.b))throw new Error('Shift details changed since consent. Start a new request so both employees can review.');}
       const excluded=[shift._id,...(other?[other._id]:[])];
