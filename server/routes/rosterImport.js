@@ -61,10 +61,10 @@ router.post('/:id/commit',async(req,res)=>{
  let inserted=[];if(v.rows.length)inserted=await Shift.insertMany(v.rows.map(r=>({user:r.user,date:r.date,startTime:r.startTime,endTime:r.endTime,type:r.type,workMode:r.workMode,department:r.department,importBatch:doc._id,notes:'Imported from Excel'})),{session});
  doc.snapshot=inserted.map(s=>({_id:s._id,user:s.user,date:s.date,startTime:s.startTime,endTime:s.endTime,type:s.type,department:s.department,workMode:s.workMode,status:s.status,updatedAt:s.updatedAt}));
  for(const [officer,email] of Object.entries(doc.people||{})){if(!officer.trim()||!email)continue;const exists=await User.exists({email,isActive:true}).session(session);if(exists)await Mapping.updateOne({officer},{$set:{email,reviewedBy:req.user._id}},{upsert:true,session});}
- for(const uid of [...new Set(inserted.map(s=>String(s.user)))])await notify(uid,'schedule_published','جدول جديد','اتضافت مواعيد جديدة لجدولك. افتح جدولي الأسبوعي للمراجعة.',null,session);
+ for(const uid of [...new Set(inserted.map(s=>String(s.user)))])await notify(uid,'schedule_published','New schedule','New shifts were added. Open My Schedule to review.',null,session);
  await Audit.create([{actor:req.user._id,action:'roster_published',resource:String(doc._id),after:doc.snapshot}],{session});
  count=v.rows.length;duplicates=v.duplicates;doc.expiresAt=null;doc.committedAt=new Date();await doc.save({session});
- });const saved=await RosterImport.findById(req.params.id);for(const uid of [...new Set((saved.snapshot||[]).map(s=>String(s.user)))])push(uid,'جدول جديد','اتضافت مواعيد جديدة لجدولك.');res.json({success:true,created:count,duplicates});}
+ });const saved=await RosterImport.findById(req.params.id);for(const uid of [...new Set((saved.snapshot||[]).map(s=>String(s.user)))])push(uid,'New schedule','New shifts added to your schedule.');res.json({success:true,created:count,duplicates});}
  catch(e){res.status(409).json({success:false,message:e.message});}finally{await session.endSession();}
 });
 router.post('/:id/undo',async(req,res)=>{
@@ -80,7 +80,7 @@ router.post('/:id/undo',async(req,res)=>{
  if(shifts.some(s=>require('../services/notificationService').cairoStart(s)<=new Date()))throw new Error('A shift in this batch has started or passed. Undo is blocked.');
  await Audit.create([{actor:req.user._id,action:'roster_undone',resource:String(doc._id),before:doc.snapshot}],{session});
  await Shift.deleteMany({importBatch:doc._id}).session(session);removed=shifts.length;doc.undoneAt=new Date();doc.undoneBy=req.user._id;await doc.save({session});
- for(const uid of [...new Set(shifts.map(s=>String(s.user)))])await notify(uid,'schedule_undone','تم سحب جدول','المدير تراجع عن رفعة جدول. راجع مواعيدك الحالية.',null,session);
+ for(const uid of [...new Set(shifts.map(s=>String(s.user)))])await notify(uid,'schedule_undone','Schedule import undone','The manager undid a schedule import. Review your current schedule.',null,session);
  });res.json({success:true,removed});}catch(e){res.status(409).json({success:false,message:e.message});}finally{await session.endSession();}
 });
 module.exports=router;

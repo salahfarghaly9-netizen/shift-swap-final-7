@@ -11,8 +11,8 @@
 <meta name="theme-color" content="#0055CC">
 <meta name="msapplication-TileColor" content="#0055CC">
 <meta name="msapplication-TileImage" content="/icons/icon-144.png">
-<meta name="description" content="نظام تبادل الشيفتات — Nextcare Medical Care Shift Swap System">
-<meta name="keywords" content="nextcare, shift swap, medical, healthcare, نيكستكير">
+<meta name="description" content="Shift Swap System — Nextcare Medical Care Shift Swap System">
+<meta name="keywords" content="nextcare, shift swap, medical, healthcare, Nextcare">
 <meta name="author" content="Salah Farghaly">
 
 <!-- PWA Manifest -->
@@ -34,7 +34,7 @@
 
 <!-- Open Graph -->
 <meta property="og:title"       content="Nextcare — Shift Swap System">
-<meta property="og:description" content="نظام تبادل الشيفتات لفريق نيكستكير">
+<meta property="og:description" content="Shift Swap System for the Nextcare team">
 <meta property="og:image"       content="/icons/icon-512.png">
 <meta property="og:type"        content="website">
 
@@ -927,32 +927,32 @@ body {
       <div class="lb">
         <div class="li">NC</div>
         <h1>Nextcare</h1>
-        <p>Shift Swap System — نظام تبادل الشيفتات</p>
+        <p>Shift Swap System</p>
       </div>
       <div class="atabs">
-        <button class="atab on" id="tab-in" onclick="authTab('in')">Sign In — دخول</button>
-        <button class="atab" id="tab-up" onclick="authTab('up')">Create Account — حساب جديد</button>
+        <button class="atab on" id="tab-in" onclick="authTab('in')">Sign In</button>
+        <button class="atab" id="tab-up" onclick="authTab('up')">Create Account</button>
       </div>
       <div id="au-in">
-        <input type="email" class="fi" id="li-em" placeholder="Email — الإيميل" autocomplete="username">
-        <input type="password" class="fi" id="li-pw" placeholder="Password — كلمة السر" autocomplete="current-password"
+        <input type="email" class="fi" id="li-em" placeholder="Email" autocomplete="username">
+        <input type="password" class="fi" id="li-pw" placeholder="Password" autocomplete="current-password"
                onkeydown="if(event.key==='Enter')realLogin()">
         <button class="bf" onclick="realLogin()">Sign In →</button>
       </div>
       <div id="au-up" style="display:none">
-        <input class="fi" id="rg-nm" placeholder="Full name — الاسم بالكامل">
-        <input type="email" class="fi" id="rg-em" placeholder="Email — الإيميل" autocomplete="username">
-        <input type="password" class="fi" id="rg-pw" placeholder="Password (6+ characters) — كلمة السر" autocomplete="new-password">
-        <input class="fi" id="rg-dp" placeholder="Department / team — القسم">
-        <input class="fi" id="rg-mc" placeholder="Manager code (optional — كود المدير لو عندك)">
+        <input class="fi" id="rg-nm" placeholder="Full name">
+        <input type="email" class="fi" id="rg-em" placeholder="Email" autocomplete="username">
+        <input type="password" class="fi" id="rg-pw" placeholder="Password (6+ characters) — Password" autocomplete="new-password">
+        <input class="fi" id="rg-dp" placeholder="Department / team">
+        <input class="fi" id="rg-mc" placeholder="Manager code (optional — Manager code, if you have one)">
         <button class="bf" onclick="realRegister()">Create Account →</button>
       </div>
       <div class="aerr" id="auth-err"></div>
       <details class="dprev">
-        <summary>🎯 Demo preview — معاينة تجريبية ببيانات وهمية (sample data, nothing is saved)</summary>
+        <summary>🎯 Demo preview — Demo preview with sample data (sample data, nothing is saved)</summary>
         <div class="db">
-          <strong>اختر مستخدم تجريبي — pick a sample user</strong>
-          <span>Demo data only — بيانات تجريبية مش حقيقية</span>
+          <strong>Choose a demo user — pick a sample user</strong>
+          <span>Demo data only — Sample data only, not real staff</span>
           <div class="ug" id="ugrid"></div>
         </div>
         <input type="email" class="fi" id="lei" placeholder="or pick a sample user by email"
@@ -976,7 +976,7 @@ body {
         <div class="sbli">NC</div>
         <div><div class="sbln">Nextcare</div><div class="sbls">Shift Swap System</div></div>
       </div>
-      <div class="dp" id="dpDemo" style="display:none">🎯 DEMO PREVIEW — بيانات وهمية</div>
+      <div class="dp" id="dpDemo" style="display:none">🎯 DEMO PREVIEW — Sample data</div>
       <div class="su">
         <div class="av" id="sbav">?</div>
         <div><div class="sun" id="sbun">—</div><div class="sur" id="sbur">—</div></div>
@@ -1071,13 +1071,13 @@ body {
 
         <!-- MY SHIFTS -->
         <div class="pg" id="pg-shifts">
-          <div class="ph"><h2>جدولي الأسبوعي <span class="muted">/ My schedule</span></h2><p>كل مواعيدك في مكان واحد. اختار الشيفت اللي محتاج تبدله.</p></div><div id="week-cards" class="week-grid"></div>
+          <div class="ph"><h2>My weekly schedule</h2><p>All your shifts in one place. Choose the shift you need to swap.</p></div><div id="week-cards" class="week-grid"></div>
           <div class="card">
             <div class="ch">
               <span class="ct" id="schedule-week">My weekly schedule</span>
               <div style="display:flex;gap:6px">
-                <button class="btn btn-sm" onclick="changeWeek(-7)">◀ السابق</button><button class="btn btn-sm" onclick="changeWeek(0)">الأسبوع الحالي</button>
-                <button class="btn btn-sm" onclick="changeWeek(7)">التالي ▶</button>
+                <button class="btn btn-sm" onclick="changeWeek(-7)">◀ Previous</button><button class="btn btn-sm" onclick="changeWeek(0)">This week</button>
+                <button class="btn btn-sm" onclick="changeWeek(7)">Next ▶</button>
               </div>
             </div>
             <div style="overflow-x:auto">
@@ -1127,7 +1127,7 @@ body {
 
         <!-- BREAK TIMER -->
         <div class="pg" id="pg-brk">
-          <div class="ph"><h2>☕ Break Timer</h2><p>Take a healthy break — يستاهل جسمك يرتاح</p></div>
+          <div class="ph"><h2>☕ Break Timer</h2><p>Take a comfortable break</p></div>
           <div class="card" style="max-width:540px;margin-bottom:18px">
             <div class="ch"><span class="ct">⏱ Break Timer</span><span class="badge bg2" id="tim-st">Ready</span></div>
             <div style="padding:28px;text-align:center">
@@ -1241,7 +1241,7 @@ body {
           <div class="card">
             <div style="overflow-x:auto">
               <table class="tbl">
-                <thead><tr><th>Name / الاسم</th><th>Department</th><th>Role</th><th>Sent</th><th>Completed</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Name / Name</th><th>Department</th><th>Role</th><th>Sent</th><th>Completed</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="tm-tb"></tbody>
               </table>
             </div>
@@ -1250,7 +1250,7 @@ body {
 
         <!-- ADD SHIFT (manager) -->
         <div class="pg" id="pg-addshift">
-          <div class="ph"><h2>إدارة الجدول <span class="muted">/ Schedule studio</span></h2><p>ارفع جدول التيم مرة واحدة بدل إدخال كل شيفت لوحده.</p></div><div id="import-studio"></div><details class="manual-shift"><summary>إضافة شيفت واحد يدويا / Add a single shift</summary>
+          <div class="ph"><h2>Schedule management</h2><p>Upload the team schedule once instead of entering each shift.</p></div><div id="import-studio"></div><details class="manual-shift"><summary>Add one shift manually / Add a single shift</summary>
           <div class="fb" style="max-width:540px">
             <div class="fg"><label class="fl">Team member ★</label><select class="fsl" id="as-user"></select></div>
             <div class="fg"><label class="fl">Date ★</label><input type="date" class="fin" id="as-date"></div>
@@ -1491,7 +1491,7 @@ body {
 
         <!-- DAILY QUOTE -->
         <div class="pg" id="pg-quote">
-          <div class="ph"><h2>💬 Daily Quote</h2><p>Your daily dose of inspiration — كلمة اليوم</p></div>
+          <div class="ph"><h2>💬 Daily Quote</h2><p>Your daily dose of inspiration — Daily quote</p></div>
 
           <!-- TODAY'S QUOTE CARD -->
           <div id="quote-daily-card" style="max-width:660px;margin-bottom:22px">
@@ -1746,7 +1746,7 @@ body {
   <div class="pwa-banner-icon">NC</div>
   <div class="pwa-banner-text">
     <div class="pwa-banner-title">Install Nextcare App</div>
-    <div class="pwa-banner-sub">Add to home screen — أضف للشاشة الرئيسية</div>
+    <div class="pwa-banner-sub">Add to home screen — Add to home screen</div>
   </div>
   <div class="pwa-banner-btns">
     <button class="pwa-install-btn" id="pwa-install-btn" onclick="installPWA()">Install</button>
@@ -1757,7 +1757,7 @@ body {
 <!-- iOS hint tooltip -->
 <div id="ios-hint">
   📲 Tap <strong>Share</strong> → <strong>"Add to Home Screen"</strong><br>
-  اضغط مشاركة ← أضف للشاشة الرئيسية
+  Tap Share ← Add to home screen
 </div>
 
 
@@ -1801,18 +1801,18 @@ let DEMO_NOTES = {
 //  DEMO DATA
 // ════════════════════════════════════════════════
 const USERS=[
-  {id:'u1',name:'Salah Farghaly', ar:'صلاح فرغلي',  email:'salah@nextcare.com',  role:'manager',  dept:'Precertification OP Team', col:'#7C3AED',ini:'SF',sw:{s:3,r:8,c:11}},
-  {id:'u2',name:'Ahmed Mohamed',  ar:'أحمد محمد',    email:'ahmed@nextcare.com',  role:'employee', dept:'Precertification IP Team', col:'#0055CC',ini:'AM',sw:{s:6,r:5,c:7}},
-  {id:'u3',name:'Sara Mahmoud',   ar:'سارة محمود',   email:'sara@nextcare.com',   role:'employee', dept:'Precertification IP Team', col:'#16A34A',ini:'SM',sw:{s:4,r:9,c:5}},
-  {id:'u4',name:'Mohamed Ali',    ar:'محمد علي',     email:'mo@nextcare.com',     role:'employee', dept:'Chronic Team',    col:'#D97706',ini:'MA',sw:{s:5,r:3,c:4}},
-  {id:'u5',name:'Nour Hossam',    ar:'نور حسام',     email:'nour@nextcare.com',   role:'employee', dept:'Chronic Team',    col:'#DC2626',ini:'NH',sw:{s:8,r:2,c:6}},
-  {id:'u6',name:'Karim Reda',     ar:'كريم رضا',     email:'karim@nextcare.com',  role:'employee', dept:'Pool Team',    col:'#0891B2',ini:'KR',sw:{s:2,r:6,c:3}},
-  {id:'u7',name:'Heba Mansour',   ar:'هبة منصور',    email:'heba@nextcare.com',   role:'employee', dept:'Customer Care Team',  col:'#BE185D',ini:'HM',sw:{s:7,r:4,c:7}},
-  {id:'u8',name:'Rami Selim',     ar:'رامي سليم',    email:'rami@nextcare.com',   role:'employee', dept:'Chronic Team',    col:'#059669',ini:'RS',sw:{s:3,r:7,c:5}},
-  {id:'u9',name:'Yasmin Omar',    ar:'ياسمين عمر',   email:'yasmin@nextcare.com', role:'employee', dept:'Pool Team',    col:'#7C3AED',ini:'YO',sw:{s:5,r:5,c:8}},
-  {id:'u10',name:'Omar Farouk',   ar:'عمر فاروق',    email:'omar@nextcare.com',   role:'employee', dept:'Precertification IP Team', col:'#92400E',ini:'OF',sw:{s:4,r:3,c:4}},
-  {id:'u11',name:'Mona Khaled',   ar:'منى خالد',     email:'mona@nextcare.com',   role:'employee', dept:'Customer Care Team',  col:'#1D4ED8',ini:'MK',sw:{s:2,r:4,c:3}},
-  {id:'u12',name:'Tarek Hassan',  ar:'طارق حسن',     email:'tarek@nextcare.com',  role:'employee', dept:'Pool Team',    col:'#B45309',ini:'TH',sw:{s:6,r:6,c:9}},
+  {id:'u1',name:'Salah Farghaly', ar:'Salah Farghaly',  email:'salah@nextcare.com',  role:'manager',  dept:'Precertification OP Team', col:'#7C3AED',ini:'SF',sw:{s:3,r:8,c:11}},
+  {id:'u2',name:'Ahmed Mohamed',  ar:'Ahmed Mohamed',    email:'ahmed@nextcare.com',  role:'employee', dept:'Precertification IP Team', col:'#0055CC',ini:'AM',sw:{s:6,r:5,c:7}},
+  {id:'u3',name:'Sara Mahmoud',   ar:'Sara Mahmoud',   email:'sara@nextcare.com',   role:'employee', dept:'Precertification IP Team', col:'#16A34A',ini:'SM',sw:{s:4,r:9,c:5}},
+  {id:'u4',name:'Mohamed Ali',    ar:'Mohamed Ali',     email:'mo@nextcare.com',     role:'employee', dept:'Chronic Team',    col:'#D97706',ini:'MA',sw:{s:5,r:3,c:4}},
+  {id:'u5',name:'Nour Hossam',    ar:'Nour Hossam',     email:'nour@nextcare.com',   role:'employee', dept:'Chronic Team',    col:'#DC2626',ini:'NH',sw:{s:8,r:2,c:6}},
+  {id:'u6',name:'Karim Reda',     ar:'Karim Reda',     email:'karim@nextcare.com',  role:'employee', dept:'Pool Team',    col:'#0891B2',ini:'KR',sw:{s:2,r:6,c:3}},
+  {id:'u7',name:'Heba Mansour',   ar:'Heba Mansour',    email:'heba@nextcare.com',   role:'employee', dept:'Customer Care Team',  col:'#BE185D',ini:'HM',sw:{s:7,r:4,c:7}},
+  {id:'u8',name:'Rami Selim',     ar:'Rami Selim',    email:'rami@nextcare.com',   role:'employee', dept:'Chronic Team',    col:'#059669',ini:'RS',sw:{s:3,r:7,c:5}},
+  {id:'u9',name:'Yasmin Omar',    ar:'Yasmin Omar',   email:'yasmin@nextcare.com', role:'employee', dept:'Pool Team',    col:'#7C3AED',ini:'YO',sw:{s:5,r:5,c:8}},
+  {id:'u10',name:'Omar Farouk',   ar:'Omar Farouk',    email:'omar@nextcare.com',   role:'employee', dept:'Precertification IP Team', col:'#92400E',ini:'OF',sw:{s:4,r:3,c:4}},
+  {id:'u11',name:'Mona Khaled',   ar:'Mona Khaled',     email:'mona@nextcare.com',   role:'employee', dept:'Customer Care Team',  col:'#1D4ED8',ini:'MK',sw:{s:2,r:4,c:3}},
+  {id:'u12',name:'Tarek Hassan',  ar:'Tarek Hassan',     email:'tarek@nextcare.com',  role:'employee', dept:'Pool Team',    col:'#B45309',ini:'TH',sw:{s:6,r:6,c:9}},
 ];
 const B=new Date('2026-05-05');
 const dd=n=>{const r=new Date(B);r.setDate(r.getDate()+n);return r;};
@@ -1826,15 +1826,15 @@ let MY_SH=[
   {date:dd(4),s:'00:00',e:'08:00',t:'Night',     st:'Confirmed'},
 ];
 let SWAPS=[
-  {id:'s1',req:USERS[4],date:dd(4), s:'00:00',e:'08:00',t:'Night',    dep:'Chronic Team',    r:'Medical emergency — ظرف صحي طارئ',   av:'Saturday all day',  urg:'Urgent',status:'Open'},
-  {id:'s2',req:USERS[2],date:dd(9), s:'08:00',e:'16:00',t:'Morning',  dep:'Precertification IP Team', r:'Family event — مناسبة عائلية',         av:'Tuesday afternoon', urg:'Medium',status:'Open'},
-  {id:'s3',req:USERS[3],date:dd(8), s:'16:00',e:'20:00',t:'Afternoon',dep:'Chronic Team',    r:'Personal appointment — موعد شخصي',    av:'Thursday morning',  urg:'Normal',status:'Open'},
-  {id:'s4',req:USERS[5],date:dd(12),s:'12:00',e:'16:00',t:'Half',     dep:'Pool Team',    r:'Training course — دورة تدريبية',       av:'Weekend',           urg:'Normal',status:'Open'},
-  {id:'s5',req:USERS[6],date:dd(3), s:'08:00',e:'16:00',t:'Morning',  dep:'Customer Care Team',  r:'Travel — سفر خارج البلد',              av:'Flexible any day',  urg:'Medium',status:'Open'},
-  {id:'s6',req:USERS[1],date:dd(2), s:'08:00',e:'16:00',t:'Morning',  dep:'Precertification IP Team', r:'Medical checkup — كشف طبي',            av:'Wednesday evening', urg:'Medium',status:'Accepted',acc:USERS[7]},
-  {id:'s7',req:USERS[8],date:dd(6), s:'00:00',e:'08:00',t:'Night',    dep:'Pool Team',    r:'Overtime fatigue — تعب من الأوفرتايم', av:'Sunday morning',    urg:'Urgent',status:'Accepted',acc:USERS[9]},
+  {id:'s1',req:USERS[4],date:dd(4), s:'00:00',e:'08:00',t:'Night',    dep:'Chronic Team',    r:'Medical emergency — Health emergency',   av:'Saturday all day',  urg:'Urgent',status:'Open'},
+  {id:'s2',req:USERS[2],date:dd(9), s:'08:00',e:'16:00',t:'Morning',  dep:'Precertification IP Team', r:'Family event — Family event',         av:'Tuesday afternoon', urg:'Medium',status:'Open'},
+  {id:'s3',req:USERS[3],date:dd(8), s:'16:00',e:'20:00',t:'Afternoon',dep:'Chronic Team',    r:'Personal appointment — Personal appointment',    av:'Thursday morning',  urg:'Normal',status:'Open'},
+  {id:'s4',req:USERS[5],date:dd(12),s:'12:00',e:'16:00',t:'Half',     dep:'Pool Team',    r:'Training course — Training course',       av:'Weekend',           urg:'Normal',status:'Open'},
+  {id:'s5',req:USERS[6],date:dd(3), s:'08:00',e:'16:00',t:'Morning',  dep:'Customer Care Team',  r:'Travel — Travel abroad',              av:'Flexible any day',  urg:'Medium',status:'Open'},
+  {id:'s6',req:USERS[1],date:dd(2), s:'08:00',e:'16:00',t:'Morning',  dep:'Precertification IP Team', r:'Medical checkup — Medical appointment',            av:'Wednesday evening', urg:'Medium',status:'Accepted',acc:USERS[7]},
+  {id:'s7',req:USERS[8],date:dd(6), s:'00:00',e:'08:00',t:'Night',    dep:'Pool Team',    r:'Overtime fatigue — Overtime fatigue', av:'Sunday morning',    urg:'Urgent',status:'Accepted',acc:USERS[9]},
   {id:'s8',req:USERS[11],date:dd(-3),s:'16:00',e:'00:00',t:'Afternoon',dep:'Pool Team',   r:'',av:'',                                                        urg:'Normal',status:'Approved',acc:USERS[10]},
-  {id:'s9',req:USERS[10],date:dd(-7),s:'08:00',e:'16:00',t:'Morning', dep:'Precertification IP Team', r:'Exam day — يوم امتحان',                av:'',                  urg:'Normal',status:'Rejected',acc:USERS[2]},
+  {id:'s9',req:USERS[10],date:dd(-7),s:'08:00',e:'16:00',t:'Morning', dep:'Precertification IP Team', r:'Exam day — Exam day',                av:'',                  urg:'Normal',status:'Rejected',acc:USERS[2]},
 ];
 let HIST=[
   {date:dd(-2), sh:'Thu May 2 · 08:00–16:00 (Morning)',    st:'Approved', note:'Covered by Yasmin Omar'},
@@ -1916,7 +1916,7 @@ function authTab(t){
 function authErr(m){document.getElementById('auth-err').textContent=m||'';}
 async function realLogin(){
   const email=document.getElementById('li-em').value.trim(),password=document.getElementById('li-pw').value;
-  if(!email||!password)return authErr('Enter your email and password — اكتب الإيميل وكلمة السر');
+  if(!email||!password)return authErr('Enter your email and password — Enter your email and password');
   authErr('');
   try{
     const d=await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})});
@@ -1928,7 +1928,7 @@ async function realRegister(){
   const name=document.getElementById('rg-nm').value.trim(),email=document.getElementById('rg-em').value.trim(),
         password=document.getElementById('rg-pw').value,department=document.getElementById('rg-dp').value.trim(),
         managerCode=document.getElementById('rg-mc').value.trim();
-  if(!name||!email||!password||!department)return authErr('Fill name, email, password and department — كمّل كل البيانات');
+  if(!name||!email||!password||!department)return authErr('Fill name, email, password and department — Complete all fields');
   authErr('');
   try{
     const body={name,email,password,department};
@@ -1957,7 +1957,7 @@ async function createShift(){
   const userId=document.getElementById('as-user').value,date=document.getElementById('as-date').value,
         startTime=document.getElementById('as-start').value,endTime=document.getElementById('as-end').value,
         type=document.getElementById('as-type').value,department=document.getElementById('as-dept').value.trim();
-  if(!userId||!date||!startTime||!endTime||!department){toast('error','Fill all fields — كمّل كل البيانات');return;}
+  if(!userId||!date||!startTime||!endTime||!department){toast('error','Fill all fields — Complete all fields');return;}
   try{
     await api('/shifts',{method:'POST',body:JSON.stringify({userId,date,startTime,endTime,type,department})});
     toast('success','✓ Shift created');await realReload();go('team');
@@ -1988,7 +1988,7 @@ let brRun=false,brPh=0,brCy=0,brTm=null;
     <button class="ub" onclick="loginAs('${u.id}')">
       <div class="ubr">
         <div style="width:28px;height:28px;border-radius:50%;background:${u.col};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${u.ini}</div>
-        <div><div class="ubn">${u.ar} / ${u.name.split(' ')[0]}</div><div class="ubrole">${u.role==='manager'?'👔 Manager':'👤 '+u.dept}</div></div>
+        <div><div class="ubn">${u.name}</div><div class="ubrole">${u.role==='manager'?'👔 Manager':'👤 '+u.dept}</div></div>
       </div>
     </button>`).join('');
 })();
@@ -2011,12 +2011,12 @@ function boot(){
   document.getElementById('app').style.display='block';
   const av=document.getElementById('sbav');
   av.textContent=ME.ini;av.style.background=ME.col+'22';av.style.color=ME.col;
-  document.getElementById('sbun').textContent=ME.ar+' / '+ME.name;
+  document.getElementById('sbun').textContent=ME.name;
   document.getElementById('sbur').textContent=ME.dept+' · '+ME.role;
   const h=new Date().getHours();
   const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   document.getElementById('grt').textContent=g+', '+ME.name.split(' ')[0]+' 👋';
-  document.getElementById('gsb').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+(REAL?'':' · Demo preview — بيانات تجريبية');
+  document.getElementById('gsb').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+(REAL?'':' · Demo preview — Demo data');
   document.getElementById('dpDemo').style.display=REAL?'none':'';
   document.getElementById('hdDemo').style.display=REAL?'none':'';
   applyRealVisibility();
@@ -2028,7 +2028,7 @@ function boot(){
   setTimeout(()=>{
     const q = getDailyQuote();
     const el = document.getElementById('dash-quote-widget');
-    if(el){el.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--brand);margin-bottom:6px">\"'+q.text+'\"</div><div style="font-size:12px;color:var(--tx2);direction:rtl;text-align:right;margin-bottom:8px">\"'+q.textAr+'\"</div><div style="font-size:11px;font-weight:600;color:var(--brand)">— '+q.author+'</div>';}
+    if(el){el.innerHTML='<div style="font-size:13px;font-style:italic;color:var(--brand);margin-bottom:6px">\"'+q.text+'\"</div><div style="font-size:12px;color:var(--tx2);direction:ltr;text-align:right;margin-bottom:8px">\"'+''+'\"</div><div style="font-size:11px;font-weight:600;color:var(--brand)">— '+q.author+'</div>';}
   }, 100);updateBdayBadge();
   ME.role==='manager'?setMode('mgr'):setMode('emp');
 }
@@ -2084,7 +2084,7 @@ function rDashSw(){
       <div class="ri">
         <div class="ud u${sw.urg[0]}" style="margin-top:6px"></div>
         <div class="rii">
-          <div class="rin">${sw.req.name} <span style="font-size:11px;color:var(--tx2)">${sw.req.ar}</span></div>
+          <div class="rin">${sw.req.name} <span style="font-size:11px;color:var(--tx2)"></span></div>
           <div class="ris">${fd(sw.date)} · ${sw.s}–${sw.e} · ${sw.r||'No reason'}</div>
         </div>
         <span class="badge ${uB(sw.urg)}">${sw.urg}</span>
@@ -2113,7 +2113,7 @@ function rSwList(){
         <div class="ud u${sw.urg[0]}" style="margin-top:6px"></div>
         <div class="avc" style="background:${sw.req.col}22;color:${sw.req.col};font-size:11px">${sw.req.ini}</div>
         <div class="rii">
-          <div class="rin">${sw.req.ar} / ${sw.req.name} <span class="badge ${uB(sw.urg)}" style="margin-left:6px">${sw.urg}</span></div>
+          <div class="rin">${sw.req.name} <span class="badge ${uB(sw.urg)}" style="margin-left:6px">${sw.urg}</span></div>
           <div class="ris">${fd(sw.date)} · ${sw.s}–${sw.e} (${sw.t}) · ${sw.dep}</div>
           ${sw.r?'<div class="rin2">💬 '+sw.r+'</div>':''}
           ${sw.av?'<div class="rin2">🕐 Available: '+sw.av+'</div>':''}
@@ -2222,7 +2222,7 @@ function rAppr(){
         <div class="rii">
           <div class="rin" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <div class="avc" style="width:30px;height:30px;background:${sw.req.col}22;color:${sw.req.col};font-size:10px">${sw.req.ini}</div>
-            <strong>${sw.req.ar} / ${sw.req.name}</strong>
+            <strong>${sw.req.name}</strong>
             <span style="color:var(--tx2)">⇄</span>
             <strong>${sw.acc?.name||'⬜ waiting'}</strong>
             <span class="badge ${uB(sw.urg)}">${sw.urg}</span>
@@ -2277,7 +2277,7 @@ function rTeam(){
       <td>
         <div style="display:flex;align-items:center;gap:8px">
           <div class="avc" style="width:30px;height:30px;background:${u.col}22;color:${u.col};font-size:10px">${u.ini}</div>
-          <div><div style="font-weight:500">${u.ar}</div><div style="font-size:11px;color:var(--tx2)">${u.name}</div></div>
+          <div><div style="font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--tx2)">${u.name}</div></div>
         </div>
       </td>
       <td>${u.dept}</td>
@@ -2299,7 +2299,7 @@ function rReports(){
       <td>
         <div style="display:flex;align-items:center;gap:7px">
           <div class="avc" style="width:26px;height:26px;background:${u.col}22;color:${u.col};font-size:9px">${u.ini}</div>
-          ${u.ar} / ${u.name}
+          ${u.name}
         </div>
       </td>
       <td>${u.sw.s}</td><td>${u.sw.r}</td>
@@ -2512,7 +2512,7 @@ function getBdayPage() {
         <div class="bday-banner-ico">🎂</div>
         <div class="bday-banner-txt">
           <h3>Happy Birthday, ${e.u.name}! 🎉</h3>
-          <p>${e.u.ar} — ${e.u.dept} · Wishing you a wonderful day! 🌟</p>
+          <p>${e.u.name} — ${e.u.dept} · Wishing you a wonderful day! 🌟</p>
         </div>
       </div>`).join('<br>');
   } else {
@@ -2531,7 +2531,7 @@ function getBdayPage() {
           ${e.u.ini}
           ${e.isToday ? '<div class="bday-today-badge">🎂</div>' : ''}
         </div>
-        <div class="bday-name">${e.u.ar}</div>
+        <div class="bday-name">${e.u.name}</div>
         <div style="font-size:12px;color:var(--tx2);margin-bottom:4px">${e.u.name}</div>
         <div class="bday-dept">${e.u.dept}</div>
         <div class="bday-date">🗓 ${MONTHS_SHORT[e.bd.month]} ${e.bd.day}</div>
@@ -2557,7 +2557,7 @@ function getBdayPage() {
         <div class="bday-row">
           <div class="av" style="background:${e.u.col}22;color:${e.u.col};width:36px;height:36px;font-size:12px;flex-shrink:0">${e.u.ini}</div>
           <div style="flex:1">
-            <div style="font-size:13px;font-weight:500">${e.u.ar} / ${e.u.name}</div>
+            <div style="font-size:13px;font-weight:500">${e.u.name}</div>
             <div style="font-size:11px;color:var(--tx2)">${e.u.dept} · ${MONTHS[e.bd.month]} ${e.bd.day}${e.age ? ' · Turning '+(e.age+1) : ''}</div>
           </div>
           <span class="bday-countdown" style="${countdownClass}">${e.daysLeft}d</span>
@@ -2929,66 +2929,66 @@ function escHtml(str) {
 
 // All 60 quotes — embedded in frontend for demo (no backend needed)
 const ALL_QUOTES = [
-  {id:1,  text:"The secret of getting ahead is getting started.",                                    textAr:"سر التقدم هو البداية.",                                                                        author:"Mark Twain",            category:"motivation"},
-  {id:2,  text:"Caring for others is an expression of what it means to be fully human.",             textAr:"الاهتمام بالآخرين هو تعبير عن معنى الإنسانية الكاملة.",                                       author:"Hillary Clinton",       category:"healthcare"},
-  {id:3,  text:"You are braver than you believe, stronger than you seem, and smarter than you think.",textAr:"أنت أكثر شجاعة مما تعتقد، وأقوى مما تبدو، وأذكى مما تظن.",                                 author:"A.A. Milne",            category:"confidence"},
-  {id:4,  text:"The best way to find yourself is to lose yourself in the service of others.",        textAr:"أفضل طريقة لاكتشاف نفسك هي أن تضيع في خدمة الآخرين.",                                       author:"Mahatma Gandhi",        category:"healthcare"},
-  {id:5,  text:"Every day may not be good, but there is something good in every day.",               textAr:"ليس كل يوم جيداً، لكن في كل يوم شيء جيد.",                                                  author:"Alice Morse Earle",     category:"positivity"},
-  {id:6,  text:"The art of medicine consists in amusing the patient while nature cures the disease.",textAr:"فن الطب يكمن في إسعاد المريض بينما تشفي الطبيعة المرض.",                                     author:"Voltaire",              category:"healthcare"},
-  {id:7,  text:"Do not watch the clock. Do what it does. Keep going.",                              textAr:"لا تراقب الساعة. افعل ما تفعله. واصل المضي.",                                                 author:"Sam Levenson",          category:"motivation"},
-  {id:8,  text:"Teamwork makes the dream work.",                                                    textAr:"العمل الجماعي يجعل الحلم حقيقة.",                                                            author:"John C. Maxwell",       category:"teamwork"},
-  {id:9,  text:"Nurses dispense comfort, compassion, and caring without even a prescription.",       textAr:"يمنح الممرضون الراحة والتعاطف والرعاية بدون وصفة.",                                          author:"Val Saintsbury",        category:"healthcare"},
-  {id:10, text:"It always seems impossible until it's done.",                                        textAr:"دائماً يبدو الأمر مستحيلاً حتى يُنجز.",                                                      author:"Nelson Mandela",        category:"motivation"},
-  {id:11, text:"Start where you are. Use what you have. Do what you can.",                          textAr:"ابدأ من حيث أنت. استخدم ما لديك. افعل ما تستطيع.",                                           author:"Arthur Ashe",           category:"motivation"},
-  {id:12, text:"The good physician treats the disease; the great physician treats the patient.",     textAr:"الطبيب الجيد يعالج المرض، والطبيب العظيم يعالج المريض.",                                     author:"William Osler",         category:"healthcare"},
-  {id:13, text:"Your attitude determines your direction.",                                           textAr:"موقفك يحدد اتجاهك.",                                                                          author:"Unknown",               category:"mindset"},
-  {id:14, text:"Small acts of kindness can make a big difference in someone's day.",                 textAr:"أفعال الطيبة الصغيرة يمكنها أن تحدث فرقاً كبيراً في يوم شخص ما.",                            author:"Unknown",               category:"kindness"},
-  {id:15, text:"To the world you may be one person, but to one person you may be the world.",       textAr:"بالنسبة للعالم قد تكون شخصاً واحداً، لكن لشخص واحد قد تكون العالم كله.",                    author:"Dr. Seuss",             category:"healthcare"},
-  {id:16, text:"The only way to do great work is to love what you do.",                             textAr:"الطريقة الوحيدة لعمل عمل عظيم هي أن تحب ما تفعله.",                                         author:"Steve Jobs",            category:"passion"},
-  {id:17, text:"You don't have to be great to start, but you have to start to be great.",           textAr:"لا تحتاج أن تكون عظيماً لتبدأ، لكنك تحتاج أن تبدأ لتكون عظيماً.",                           author:"Zig Ziglar",            category:"motivation"},
-  {id:18, text:"Wherever the art of medicine is loved, there is also a love of humanity.",          textAr:"حيثما يُحبّ فن الطب، توجد أيضاً محبة الإنسانية.",                                           author:"Hippocrates",           category:"healthcare"},
-  {id:19, text:"Success is not final, failure is not fatal: it is the courage to continue.",        textAr:"النجاح ليس نهاية، والفشل ليس قاتلاً: الشجاعة على الاستمرار هي ما يهم.",                     author:"Winston Churchill",     category:"resilience"},
-  {id:20, text:"The strength of the team is each member. The strength of each member is the team.", textAr:"قوة الفريق هي كل فرد فيه. وقوة كل فرد هي الفريق.",                                          author:"Phil Jackson",          category:"teamwork"},
-  {id:21, text:"Happiness is not something ready made. It comes from your own actions.",            textAr:"السعادة ليست شيئاً جاهزاً. تأتي من أفعالك الخاصة.",                                         author:"Dalai Lama",            category:"positivity"},
-  {id:22, text:"Medicine is not only a science; it is also an art.",                                textAr:"الطب ليس علماً فحسب؛ بل هو أيضاً فن.",                                                      author:"Paracelsus",            category:"healthcare"},
-  {id:23, text:"Keep your face always toward the sunshine, and shadows will fall behind you.",      textAr:"أبق وجهك دائماً نحو الشمس، وستقع الظلال خلفك.",                                            author:"Walt Whitman",          category:"positivity"},
-  {id:24, text:"One person caring about another represents life's greatest value.",                  textAr:"اهتمام شخص بآخر يمثل أعظم قيمة في الحياة.",                                                 author:"Jim Rohn",              category:"healthcare"},
-  {id:25, text:"Believe you can and you're halfway there.",                                          textAr:"صدق أنك تستطيع وستكون في منتصف الطريق.",                                                    author:"Theodore Roosevelt",    category:"confidence"},
-  {id:26, text:"In every job that must be done, there is an element of fun.",                       textAr:"في كل عمل يجب إنجازه، هناك عنصر من المتعة.",                                                author:"Mary Poppins",          category:"positivity"},
-  {id:27, text:"The patient is the center of everything we do.",                                    textAr:"المريض هو محور كل ما نقوم به.",                                                              author:"Unknown",               category:"healthcare"},
-  {id:28, text:"You must be the change you wish to see in the world.",                              textAr:"كن التغيير الذي تريد رؤيته في العالم.",                                                      author:"Mahatma Gandhi",        category:"mindset"},
-  {id:29, text:"A smile is the best medicine.",                                                      textAr:"الابتسامة هي أفضل دواء.",                                                                    author:"Unknown",               category:"healthcare"},
-  {id:30, text:"Hard work beats talent when talent doesn't work hard.",                             textAr:"العمل الجاد يتغلب على الموهبة حين لا تعمل الموهبة بجد.",                                    author:"Tim Notke",             category:"motivation"},
-  {id:31, text:"Each patient carries his own doctor inside him.",                                   textAr:"كل مريض يحمل طبيبه بداخله.",                                                                 author:"Albert Schweitzer",     category:"healthcare"},
-  {id:32, text:"Quality is not an act, it is a habit.",                                             textAr:"الجودة ليست فعلاً، بل هي عادة.",                                                             author:"Aristotle",             category:"excellence"},
-  {id:33, text:"Be kind whenever possible. It is always possible.",                                 textAr:"كن لطيفاً كلما أمكن. وهذا دائماً ممكن.",                                                    author:"Dalai Lama",            category:"kindness"},
-  {id:34, text:"The greatest gift of leadership is a boss who wants you to be successful.",         textAr:"أعظم هدية في القيادة هي مسؤول يريدك أن تنجح.",                                              author:"Jon Taffer",            category:"teamwork"},
-  {id:35, text:"Alone we can do so little; together we can do so much.",                            textAr:"وحدنا نستطيع فعل القليل؛ معاً نستطيع فعل الكثير.",                                          author:"Helen Keller",          category:"teamwork"},
-  {id:36, text:"We make a living by what we get, but we make a life by what we give.",              textAr:"نكسب رزقنا بما نأخذ، لكن نصنع حياتنا بما نعطي.",                                          author:"Winston Churchill",     category:"kindness"},
-  {id:37, text:"Even the darkest night will end and the sun will rise.",                            textAr:"حتى أشد الليالي ظلاماً ستنتهي وستشرق الشمس.",                                              author:"Victor Hugo",           category:"resilience"},
-  {id:38, text:"Empathy is seeing with the eyes of another, listening with the ears of another.",   textAr:"التعاطف هو الرؤية بعيون الآخر، والاستماع بأذنيه.",                                         author:"Alfred Adler",          category:"healthcare"},
-  {id:39, text:"Do what you do so well that they will want to see it again.",                       textAr:"افعل ما تفعله بشكل جيد لدرجة أنهم سيريدون رؤيته مرة أخرى.",                               author:"Walt Disney",           category:"excellence"},
-  {id:40, text:"Take care of your body. It's the only place you have to live.",                     textAr:"اعتنِ بجسدك. إنه المكان الوحيد الذي يجب عليك أن تعيش فيه.",                               author:"Jim Rohn",              category:"health"},
-  {id:41, text:"No act of kindness, no matter how small, is ever wasted.",                         textAr:"لا يضيع أي عمل من أعمال اللطف، مهما كان صغيراً.",                                          author:"Aesop",                 category:"kindness"},
-  {id:42, text:"The best healthcare is prevention.",                                                 textAr:"أفضل رعاية صحية هي الوقاية.",                                                                author:"Unknown",               category:"healthcare"},
-  {id:43, text:"It is not the mountain we conquer but ourselves.",                                  textAr:"ليس الجبل ما نفتحه بل أنفسنا.",                                                             author:"Edmund Hillary",        category:"resilience"},
-  {id:44, text:"What we do for ourselves dies with us. What we do for others remains.",             textAr:"ما نفعله لأنفسنا يموت معنا. ما نفعله للآخرين يبقى.",                                       author:"Albert Pine",           category:"purpose"},
-  {id:45, text:"A good laugh and a long sleep are the best cures.",                                 textAr:"الضحكة الجيدة والنوم الطويل هما أفضل علاجين.",                                              author:"Irish Proverb",         category:"health"},
-  {id:46, text:"Continuous improvement is better than delayed perfection.",                          textAr:"التحسين المستمر أفضل من الكمال المؤجل.",                                                    author:"Mark Twain",            category:"excellence"},
-  {id:47, text:"When you cannot find the sunshine, be the sunshine.",                               textAr:"حين لا تجد الشمس، كن أنت الشمس.",                                                           author:"Unknown",               category:"positivity"},
-  {id:48, text:"Great things are done by a series of small things brought together.",                textAr:"الأشياء العظيمة تنجز بسلسلة من الأشياء الصغيرة مجتمعة.",                                    author:"Vincent Van Gogh",      category:"excellence"},
-  {id:49, text:"Health is the greatest gift, contentment the greatest wealth.",                     textAr:"الصحة هي أعظم هبة، والرضا هو أعظم ثروة.",                                                   author:"Buddha",                category:"health"},
-  {id:50, text:"Strive not to be a success, but rather to be of value.",                            textAr:"لا تسعَ لتكون ناجحاً، بل اسعَ لتكون ذا قيمة.",                                            author:"Albert Einstein",       category:"purpose"},
-  {id:51, text:"The best preparation for tomorrow is doing your best today.",                        textAr:"أفضل استعداد للغد هو بذل أفضل ما لديك اليوم.",                                              author:"H. Jackson Brown Jr.",  category:"motivation"},
-  {id:52, text:"In the middle of difficulty lies opportunity.",                                      textAr:"في وسط الصعوبة تكمن الفرصة.",                                                                author:"Albert Einstein",       category:"resilience"},
-  {id:53, text:"Life is short, and there is no time to leave important words unsaid.",               textAr:"الحياة قصيرة، ولا يوجد وقت لترك الكلمات المهمة دون قولها.",                               author:"T.S. Eliot",            category:"positivity"},
-  {id:54, text:"It's not how much we give but how much love we put into giving.",                   textAr:"المهم ليس كم نعطي بل كم من الحب نضع في العطاء.",                                           author:"Mother Teresa",         category:"kindness"},
-  {id:55, text:"Resilience is knowing that you are the only one that has the power to pick yourself up.", textAr:"المرونة هي معرفة أنك الوحيد الذي يملك القوة لرفع نفسك.",                           author:"Mary Holloway",         category:"resilience"},
-  {id:56, text:"An ounce of prevention is worth a pound of cure.",                                  textAr:"أوقية من الوقاية تساوي رطلاً من العلاج.",                                                   author:"Benjamin Franklin",     category:"healthcare"},
-  {id:57, text:"Together we are stronger.",                                                          textAr:"معاً نكون أقوى.",                                                                            author:"Unknown",               category:"teamwork"},
-  {id:58, text:"Kindness is a language which the deaf can hear and the blind can see.",              textAr:"اللطف لغة يسمعها الأصم ويراها الأعمى.",                                                    author:"Mark Twain",            category:"kindness"},
-  {id:59, text:"The only way to be truly satisfied is to do what you believe is great work.",        textAr:"الطريقة الوحيدة للرضا الحقيقي هي القيام بما تعتقد أنه عمل عظيم.",                         author:"Steve Jobs",            category:"passion"},
-  {id:60, text:"Every morning you have two choices: sleep with your dreams, or wake up and chase them.", textAr:"كل صباح لديك خياران: النوم مع أحلامك، أو الاستيقاظ ومطاردتها.",                     author:"Unknown",               category:"motivation"},
+  {id:1,  text:"The secret of getting ahead is getting started.",                                    textAr:"",                                                                        author:"Mark Twain",            category:"motivation"},
+  {id:2,  text:"Caring for others is an expression of what it means to be fully human.",             textAr:"",                                       author:"Hillary Clinton",       category:"healthcare"},
+  {id:3,  text:"You are braver than you believe, stronger than you seem, and smarter than you think.",textAr:"",                                 author:"A.A. Milne",            category:"confidence"},
+  {id:4,  text:"The best way to find yourself is to lose yourself in the service of others.",        textAr:"",                                       author:"Mahatma Gandhi",        category:"healthcare"},
+  {id:5,  text:"Every day may not be good, but there is something good in every day.",               textAr:"",                                                  author:"Alice Morse Earle",     category:"positivity"},
+  {id:6,  text:"The art of medicine consists in amusing the patient while nature cures the disease.",textAr:"",                                     author:"Voltaire",              category:"healthcare"},
+  {id:7,  text:"Do not watch the clock. Do what it does. Keep going.",                              textAr:"",                                                 author:"Sam Levenson",          category:"motivation"},
+  {id:8,  text:"Teamwork makes the dream work.",                                                    textAr:"",                                                            author:"John C. Maxwell",       category:"teamwork"},
+  {id:9,  text:"Nurses dispense comfort, compassion, and caring without even a prescription.",       textAr:"",                                          author:"Val Saintsbury",        category:"healthcare"},
+  {id:10, text:"It always seems impossible until it's done.",                                        textAr:"",                                                      author:"Nelson Mandela",        category:"motivation"},
+  {id:11, text:"Start where you are. Use what you have. Do what you can.",                          textAr:"",                                           author:"Arthur Ashe",           category:"motivation"},
+  {id:12, text:"The good physician treats the disease; the great physician treats the patient.",     textAr:"",                                     author:"William Osler",         category:"healthcare"},
+  {id:13, text:"Your attitude determines your direction.",                                           textAr:"",                                                                          author:"Unknown",               category:"mindset"},
+  {id:14, text:"Small acts of kindness can make a big difference in someone's day.",                 textAr:"",                            author:"Unknown",               category:"kindness"},
+  {id:15, text:"To the world you may be one person, but to one person you may be the world.",       textAr:"",                    author:"Dr. Seuss",             category:"healthcare"},
+  {id:16, text:"The only way to do great work is to love what you do.",                             textAr:"",                                         author:"Steve Jobs",            category:"passion"},
+  {id:17, text:"You don't have to be great to start, but you have to start to be great.",           textAr:"",                           author:"Zig Ziglar",            category:"motivation"},
+  {id:18, text:"Wherever the art of medicine is loved, there is also a love of humanity.",          textAr:"",                                           author:"Hippocrates",           category:"healthcare"},
+  {id:19, text:"Success is not final, failure is not fatal: it is the courage to continue.",        textAr:"",                     author:"Winston Churchill",     category:"resilience"},
+  {id:20, text:"The strength of the team is each member. The strength of each member is the team.", textAr:"",                                          author:"Phil Jackson",          category:"teamwork"},
+  {id:21, text:"Happiness is not something ready made. It comes from your own actions.",            textAr:"",                                         author:"Dalai Lama",            category:"positivity"},
+  {id:22, text:"Medicine is not only a science; it is also an art.",                                textAr:"",                                                      author:"Paracelsus",            category:"healthcare"},
+  {id:23, text:"Keep your face always toward the sunshine, and shadows will fall behind you.",      textAr:"",                                            author:"Walt Whitman",          category:"positivity"},
+  {id:24, text:"One person caring about another represents life's greatest value.",                  textAr:"",                                                 author:"Jim Rohn",              category:"healthcare"},
+  {id:25, text:"Believe you can and you're halfway there.",                                          textAr:"",                                                    author:"Theodore Roosevelt",    category:"confidence"},
+  {id:26, text:"In every job that must be done, there is an element of fun.",                       textAr:"",                                                author:"Mary Poppins",          category:"positivity"},
+  {id:27, text:"The patient is the center of everything we do.",                                    textAr:"",                                                              author:"Unknown",               category:"healthcare"},
+  {id:28, text:"You must be the change you wish to see in the world.",                              textAr:"",                                                      author:"Mahatma Gandhi",        category:"mindset"},
+  {id:29, text:"A smile is the best medicine.",                                                      textAr:"",                                                                    author:"Unknown",               category:"healthcare"},
+  {id:30, text:"Hard work beats talent when talent doesn't work hard.",                             textAr:"",                                    author:"Tim Notke",             category:"motivation"},
+  {id:31, text:"Each patient carries his own doctor inside him.",                                   textAr:"",                                                                 author:"Albert Schweitzer",     category:"healthcare"},
+  {id:32, text:"Quality is not an act, it is a habit.",                                             textAr:"",                                                             author:"Aristotle",             category:"excellence"},
+  {id:33, text:"Be kind whenever possible. It is always possible.",                                 textAr:"",                                                    author:"Dalai Lama",            category:"kindness"},
+  {id:34, text:"The greatest gift of leadership is a boss who wants you to be successful.",         textAr:"",                                              author:"Jon Taffer",            category:"teamwork"},
+  {id:35, text:"Alone we can do so little; together we can do so much.",                            textAr:"",                                          author:"Helen Keller",          category:"teamwork"},
+  {id:36, text:"We make a living by what we get, but we make a life by what we give.",              textAr:"",                                          author:"Winston Churchill",     category:"kindness"},
+  {id:37, text:"Even the darkest night will end and the sun will rise.",                            textAr:"",                                              author:"Victor Hugo",           category:"resilience"},
+  {id:38, text:"Empathy is seeing with the eyes of another, listening with the ears of another.",   textAr:"",                                         author:"Alfred Adler",          category:"healthcare"},
+  {id:39, text:"Do what you do so well that they will want to see it again.",                       textAr:"",                               author:"Walt Disney",           category:"excellence"},
+  {id:40, text:"Take care of your body. It's the only place you have to live.",                     textAr:"",                               author:"Jim Rohn",              category:"health"},
+  {id:41, text:"No act of kindness, no matter how small, is ever wasted.",                         textAr:"",                                          author:"Aesop",                 category:"kindness"},
+  {id:42, text:"The best healthcare is prevention.",                                                 textAr:"",                                                                author:"Unknown",               category:"healthcare"},
+  {id:43, text:"It is not the mountain we conquer but ourselves.",                                  textAr:"",                                                             author:"Edmund Hillary",        category:"resilience"},
+  {id:44, text:"What we do for ourselves dies with us. What we do for others remains.",             textAr:"",                                       author:"Albert Pine",           category:"purpose"},
+  {id:45, text:"A good laugh and a long sleep are the best cures.",                                 textAr:"",                                              author:"Irish Proverb",         category:"health"},
+  {id:46, text:"Continuous improvement is better than delayed perfection.",                          textAr:"",                                                    author:"Mark Twain",            category:"excellence"},
+  {id:47, text:"When you cannot find the sunshine, be the sunshine.",                               textAr:"",                                                           author:"Unknown",               category:"positivity"},
+  {id:48, text:"Great things are done by a series of small things brought together.",                textAr:"",                                    author:"Vincent Van Gogh",      category:"excellence"},
+  {id:49, text:"Health is the greatest gift, contentment the greatest wealth.",                     textAr:"",                                                   author:"Buddha",                category:"health"},
+  {id:50, text:"Strive not to be a success, but rather to be of value.",                            textAr:"",                                            author:"Albert Einstein",       category:"purpose"},
+  {id:51, text:"The best preparation for tomorrow is doing your best today.",                        textAr:"",                                              author:"H. Jackson Brown Jr.",  category:"motivation"},
+  {id:52, text:"In the middle of difficulty lies opportunity.",                                      textAr:"",                                                                author:"Albert Einstein",       category:"resilience"},
+  {id:53, text:"Life is short, and there is no time to leave important words unsaid.",               textAr:"",                               author:"T.S. Eliot",            category:"positivity"},
+  {id:54, text:"It's not how much we give but how much love we put into giving.",                   textAr:"",                                           author:"Mother Teresa",         category:"kindness"},
+  {id:55, text:"Resilience is knowing that you are the only one that has the power to pick yourself up.", textAr:"",                           author:"Mary Holloway",         category:"resilience"},
+  {id:56, text:"An ounce of prevention is worth a pound of cure.",                                  textAr:"",                                                   author:"Benjamin Franklin",     category:"healthcare"},
+  {id:57, text:"Together we are stronger.",                                                          textAr:"",                                                                            author:"Unknown",               category:"teamwork"},
+  {id:58, text:"Kindness is a language which the deaf can hear and the blind can see.",              textAr:"",                                                    author:"Mark Twain",            category:"kindness"},
+  {id:59, text:"The only way to be truly satisfied is to do what you believe is great work.",        textAr:"",                         author:"Steve Jobs",            category:"passion"},
+  {id:60, text:"Every morning you have two choices: sleep with your dreams, or wake up and chase them.", textAr:"",                     author:"Unknown",               category:"motivation"},
 ];
 
 // State
@@ -3023,7 +3023,7 @@ function renderDailyCard(q) {
         ✨ Quote of the Day — ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}
       </div>
       <div class="qcard-quote">"${q.text}"</div>
-      <div class="qcard-quote-ar">"${q.textAr}"</div>
+      
       <div class="qcard-author">— ${q.author}</div>
       <div style="margin-top:4px">
         <span class="qcard-cat">${CAT_ICONS[q.category]||'💬'} ${q.category}</span>
@@ -3074,7 +3074,7 @@ function toggleSaveQuote(id, fromDailyCard) {
 function shareQuote(id) {
   const q = ALL_QUOTES.find(x => x.id === id);
   if (!q) return;
-  const text = `"${q.text}" — ${q.author}\n\n"${q.textAr}"\n\n— Nextcare Shift Swap`;
+  const text = `"${q.text}" — ${q.author}\n\n""\n\n— Nextcare Shift Swap`;
   navigator.clipboard?.writeText(text).then(() => toast('success','📋 Quote copied to clipboard!'))
     .catch(() => toast('info','📋 Copy: '+q.text.slice(0,40)+'...'));
 }
@@ -3095,7 +3095,7 @@ function renderBrowse() {
       <div class="q-item-num">${CAT_ICONS[q.category]||'💬'}</div>
       <div class="q-item-body">
         <div class="q-item-text">"${q.text}"</div>
-        <div class="q-item-ar">"${q.textAr}"</div>
+        
         <div class="q-item-author">— ${q.author} <span class="qcard-cat" style="margin-left:6px">${q.category}</span></div>
       </div>
       <button class="q-item-save ${savedQuoteIds.has(q.id)?'saved':''}" onclick="toggleSaveQuote(${q.id},false)" title="${savedQuoteIds.has(q.id)?'Remove from saved':'Save quote'}">
@@ -3117,7 +3117,7 @@ function renderSaved() {
       <div class="q-item-num">❤️</div>
       <div class="q-item-body">
         <div class="q-item-text">"${q.text}"</div>
-        <div class="q-item-ar">"${q.textAr}"</div>
+        
         <div class="q-item-author">— ${q.author} <span class="qcard-cat" style="margin-left:6px">${q.category}</span></div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
@@ -3153,19 +3153,19 @@ let tradeFiltVal = 'all';
 let myPostedTrades = [];
 
 const DEMO_TRADES = [
-  { id:'t1', giver:{name:'Sara Mahmoud',  ar:'سارة محمود', ini:'SM',col:'#16A34A',dept:'Precertification IP Team'},  totalHoursGiver:8, totalHoursReceiver:0, tradeType:'equal',   status:'open', reason:'Need Friday off — family event. Will cover any morning shift next week.',       createdAt:new Date(Date.now()-3600000)  },
-  { id:'t2', giver:{name:'Nour Hossam',   ar:'نور حسام',   ini:'NH',col:'#DC2626',dept:'Chronic Team'},              totalHoursGiver:8, totalHoursReceiver:8, tradeType:'equal',   status:'open', reason:'Swap Saturday night for Sunday morning — equal hours, no debt.',               createdAt:new Date(Date.now()-7200000)  },
-  { id:'t3', giver:{name:'Karim Reda',    ar:'كريم رضا',   ini:'KR',col:'#0891B2',dept:'Pool Team'},                 totalHoursGiver:4, totalHoursReceiver:0, tradeType:'partial', status:'open', reason:'Only need 4 hours covered. Happy to owe the difference.',                      createdAt:new Date(Date.now()-10800000) },
-  { id:'t4', giver:{name:'Heba Mansour',  ar:'هبة منصور',  ini:'HM',col:'#BE185D',dept:'Customer Care Team'},       totalHoursGiver:8, totalHoursReceiver:4, tradeType:'premium', status:'open', reason:'Offering 8h, only want 4h back. Great deal if you have a half shift free!',   createdAt:new Date(Date.now()-14400000) },
-  { id:'t5', giver:{name:'Rami Selim',    ar:'رامي سليم',  ini:'RS',col:'#059669',dept:'Chronic Team'},              totalHoursGiver:8, totalHoursReceiver:0, tradeType:'equal',   status:'open', reason:'Need this Thursday night shift covered urgently.',                              createdAt:new Date(Date.now()-1800000)  },
+  { id:'t1', giver:{name:'Sara Mahmoud',  ar:'Sara Mahmoud', ini:'SM',col:'#16A34A',dept:'Precertification IP Team'},  totalHoursGiver:8, totalHoursReceiver:0, tradeType:'equal',   status:'open', reason:'Need Friday off — family event. Will cover any morning shift next week.',       createdAt:new Date(Date.now()-3600000)  },
+  { id:'t2', giver:{name:'Nour Hossam',   ar:'Nour Hossam',   ini:'NH',col:'#DC2626',dept:'Chronic Team'},              totalHoursGiver:8, totalHoursReceiver:8, tradeType:'equal',   status:'open', reason:'Swap Saturday night for Sunday morning — equal hours, no debt.',               createdAt:new Date(Date.now()-7200000)  },
+  { id:'t3', giver:{name:'Karim Reda',    ar:'Karim Reda',   ini:'KR',col:'#0891B2',dept:'Pool Team'},                 totalHoursGiver:4, totalHoursReceiver:0, tradeType:'partial', status:'open', reason:'Only need 4 hours covered. Happy to owe the difference.',                      createdAt:new Date(Date.now()-10800000) },
+  { id:'t4', giver:{name:'Heba Mansour',  ar:'Heba Mansour',  ini:'HM',col:'#BE185D',dept:'Customer Care Team'},       totalHoursGiver:8, totalHoursReceiver:4, tradeType:'premium', status:'open', reason:'Offering 8h, only want 4h back. Great deal if you have a half shift free!',   createdAt:new Date(Date.now()-14400000) },
+  { id:'t5', giver:{name:'Rami Selim',    ar:'Rami Selim',  ini:'RS',col:'#059669',dept:'Chronic Team'},              totalHoursGiver:8, totalHoursReceiver:0, tradeType:'equal',   status:'open', reason:'Need this Thursday night shift covered urgently.',                              createdAt:new Date(Date.now()-1800000)  },
 ];
 
 const LBOARD = [
-  { name:'Tarek Hassan', ar:'طارق حسن', ini:'TH',col:'#B45309',dept:'Pool Team',                  earned:18,spent:6 },
-  { name:'Yasmin Omar',  ar:'ياسمين عمر',ini:'YO',col:'#7C3AED',dept:'Precertification OP Team',  earned:14,spent:10 },
-  { name:'Rami Selim',   ar:'رامي سليم', ini:'RS',col:'#059669',dept:'Chronic Team',               earned:12,spent:8 },
-  { name:'Ahmed Mohamed',ar:'أحمد محمد', ini:'AM',col:'#0055CC',dept:'Precertification IP Team',  earned:10,spent:7 },
-  { name:'Heba Mansour', ar:'هبة منصور', ini:'HM',col:'#BE185D',dept:'Customer Care Team',        earned:10,spent:12 },
+  { name:'Tarek Hassan', ar:'Tarek Hassan', ini:'TH',col:'#B45309',dept:'Pool Team',                  earned:18,spent:6 },
+  { name:'Yasmin Omar',  ar:'Yasmin Omar',ini:'YO',col:'#7C3AED',dept:'Precertification OP Team',  earned:14,spent:10 },
+  { name:'Rami Selim',   ar:'Rami Selim', ini:'RS',col:'#059669',dept:'Chronic Team',               earned:12,spent:8 },
+  { name:'Ahmed Mohamed',ar:'Ahmed Mohamed', ini:'AM',col:'#0055CC',dept:'Precertification IP Team',  earned:10,spent:7 },
+  { name:'Heba Mansour', ar:'Heba Mansour', ini:'HM',col:'#BE185D',dept:'Customer Care Team',        earned:10,spent:12 },
 ];
 
 function initTradePage() {
@@ -3220,7 +3220,7 @@ function renderMarket() {
       <div class="avc" style="background:${t.giver.col}22;color:${t.giver.col};font-size:12px">${t.giver.ini}</div>
       <div class="rii">
         <div class="rin" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <strong>${t.giver.ar} / ${t.giver.name}</strong>
+          <strong>${t.giver.name}</strong>
           <span class="ttype tt-${t.tradeType}">${t.tradeType==='equal'?'🟢 Equal':t.tradeType==='partial'?'🟡 Partial':'🔴 Premium'}</span>
         </div>
         <div class="ris">${t.giver.dept} · ${fdt(t.createdAt)}</div>
@@ -3258,14 +3258,14 @@ function renderMyTrades() {
 }
 
 function renderLeaderboard() {
-  const data = [...LBOARD, {name:ME?.name||'You',ar:ME?.ar||'أنت',ini:ME?.ini||'?',col:ME?.col||'#0055CC',dept:ME?.dept||'—',earned:myWallet.earned,spent:myWallet.spent}]
+  const data = [...LBOARD, {name:ME?.name||'You',ar:ME?.ar||'You',ini:ME?.ini||'?',col:ME?.col||'#0055CC',dept:ME?.dept||'—',earned:myWallet.earned,spent:myWallet.spent}]
     .sort((a,b)=>b.earned-a.earned);
   document.getElementById('t-lboard').innerHTML = data.map((u,i)=>`
     <tr ${u.name===ME?.name?'style="background:var(--bl)"':''}>
       <td><strong>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</strong></td>
       <td><div style="display:flex;align-items:center;gap:8px">
         <div class="avc" style="width:28px;height:28px;background:${u.col}22;color:${u.col};font-size:10px">${u.ini}</div>
-        <div><div style="font-weight:500">${u.ar}</div><div style="font-size:11px;color:var(--tx2)">${u.dept}</div></div>
+        <div><div style="font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--tx2)">${u.dept}</div></div>
       </div></td>
       <td><span class="hpill" style="background:var(--gbg);color:var(--green);border-color:var(--gbd)">${u.earned}h ↑</span></td>
       <td><span class="hpill" style="background:var(--abg);color:var(--amber);border-color:var(--abd)">${u.spent}h ↓</span></td>

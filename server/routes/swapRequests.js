@@ -77,7 +77,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     shift.status='NeedsCoverage'; await shift.save();
     await User.findByIdAndUpdate(req.user._id,{$inc:{'swapStats.sent':1}});
     const populated = await swap.populate([{path:'requester',select:'name department'},{path:'requesterShift'}]);
-    for(const u of await User.find({isActive:true}))await notify(u._id,'swap_offer','عرض تبديل جديد',req.user.name+' طرح شيفت للتبديل. راجع العروض المتاحة.',swap._id);
+    for(const u of await User.find({isActive:true}))await notify(u._id,'swap_offer','New exchange offer',req.user.name+' offered a shift for exchange. Review available offers.',swap._id);
     res.status(201).json({success:true, swap:populated});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
@@ -88,7 +88,7 @@ router.post('/:id/consent',async(req,res)=>{try{
  const a=await Shift.findById(sw.requesterShift),b=await Shift.findById(sw.acceptorShift);
  if(a&&b&&(cairoStart(a)<=new Date()||cairoStart(b)<=new Date()))return res.status(409).json({success:false,message:'A shift has already started.'});
  if(!a||!b||String(a.user)!==String(sw.requester)||String(b.user)!==String(sw.acceptor)||b.status!=='Confirmed')return res.status(409).json({success:false,message:'Shifts changed. Withdraw and start again.'});
- sw.consentSnapshot={a:{date:a.date,startTime:a.startTime,endTime:a.endTime,workMode:a.workMode,department:a.department,type:a.type},b:{date:b.date,startTime:b.startTime,endTime:b.endTime,workMode:b.workMode,department:b.department,type:b.type}};sw.status='Accepted';sw.consentAt=new Date();await sw.save();await notify(sw.acceptor,'swap_accepted','تمت الموافقة على العرض','الطرف التاني وافق. التبديل في انتظار موافقة المدير.',sw._id);
+ sw.consentSnapshot={a:{date:a.date,startTime:a.startTime,endTime:a.endTime,workMode:a.workMode,department:a.department,type:a.type},b:{date:b.date,startTime:b.startTime,endTime:b.endTime,workMode:b.workMode,department:b.department,type:b.type}};sw.status='Accepted';sw.consentAt=new Date();await sw.save();await notify(sw.acceptor,'swap_accepted','Offer approved','The other employee accepted. Waiting for manager approval.',sw._id);
  res.json({success:true});}catch(e){res.status(400).json({success:false,message:e.message});}});
 
 router.post('/:id/accept', async (req, res) => {
@@ -106,7 +106,7 @@ router.post('/:id/accept', async (req, res) => {
       if(await SwapRequest.exists({$or:[{requesterShift:offered._id},{acceptorShift:offered._id}],status:{$in:['Open','Proposed','Accepted']}}))return res.status(409).json({success:false,message:'That shift already has a pending request.'});
       const update=await SwapRequest.updateOne({_id:swap._id,status:'Open'},{$set:{acceptor:req.user._id,acceptorShift:offered._id,status:'Proposed'}});
       if(!update.modifiedCount)return res.status(409).json({success:false,message:'Request changed; refresh.'});
-      await notify(swap.requester._id,'swap_proposed','عرض تبديل جديد',`${req.user.name} اختار شيفت يبدله معاك. راجع العرض ووافق عليه قبل مراجعة المدير.`,swap._id);
+      await notify(swap.requester._id,'swap_proposed','New exchange offer',`${req.user.name} Choose a shift to offer in return. The requester must accept before manager review.`,swap._id);
       return res.json({success:true,message:'Proposal sent. Waiting for requester consent.'});
     }
     const update=await SwapRequest.updateOne({_id:swap._id,status:'Open'},{$set:{acceptor:req.user._id,status:'Accepted'}});
