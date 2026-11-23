@@ -7,3 +7,5 @@ const originalApprove=window.approveMember;window.approveMember=async id=>{const
 })();
 
 {const base=renderWeek;renderWeek=function(){base();const p=document.getElementById('pg-post');if(REAL&&p&&!document.getElementById('partial-swap-entry'))p.insertAdjacentHTML('afterbegin',`<section class="card preview-card" id="partial-swap-entry"><h3>Swap selected hours</h3><p>Exchange part of a shift, such as 4 hours, or offer the whole shift. Choose a matching return window and send the match for manager review.</p><button class="btn bp" onclick="go('swaps');marketForm();document.getElementById('shift-market').scrollIntoView({behavior:'smooth'})">Swap part of a shift</button></section>`);};}
+
+{const script=document.createElement('script');script.src='/workflow.js';document.body.appendChild(script);}
