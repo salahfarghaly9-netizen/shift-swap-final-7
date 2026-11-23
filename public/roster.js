@@ -105,3 +105,8 @@ function approveMarketDemo(){if(REAL)return;MARKET_DEMO_APPROVED=true;renderMark
 
 // Load the desk-break studio after the main app shell.
 {const script=document.createElement('script');script.src='/breaks.js';document.body.appendChild(script);}
+
+async function approveMember(id){const u=TEAM.find(x=>x.id===id);if(!u)return;const department=prompt('Confirm the department for '+u.name+'. Verify this person outside the app before approving.',u.dept);if(!department?.trim())return;if(!confirm('Approve '+u.name+' ('+u.email+') in '+department.trim()+'?'))return;try{await api('/users/'+id,{method:'PATCH',body:JSON.stringify({membership:'approved',department:department.trim(),isActive:true})});toast('success','Member approved');await realReload();}catch(e){toast('error',e.message);}}
+async function rejectMember(id){if(!confirm('Reject this registration?'))return;try{await api('/users/'+id,{method:'PATCH',body:JSON.stringify({membership:'rejected',isActive:false})});await realReload();}catch(e){toast('error',e.message);}}
+
+{const script=document.createElement('script');script.src='/membership.js';document.body.appendChild(script);}
