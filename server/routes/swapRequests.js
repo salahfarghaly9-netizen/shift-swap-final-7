@@ -66,6 +66,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     if(cairoStart(shift)<=new Date())return res.status(400).json({success:false,message:'Shift has already started.'});
     if(shift.type==='AnnualLeave')return res.status(400).json({success:false,message:'Annual leave cannot be offered for coverage'});
     if (shift.status==='Swapped') return res.status(400).json({success:false,message:'Shift already swapped'});
+    if(await require('../models/MarketOffer').exists({shift:shift._id,status:{$in:['Open','Matched']}}))return res.status(409).json({success:false,message:'This shift has an active market offer.'});
     const existing = await SwapRequest.findOne({$or:[{requesterShift:shift._id},{acceptorShift:shift._id}],status:{$in:['Open','Proposed','Accepted']}});
     if (existing) return res.status(409).json({success:false,message:'An open request already exists for this shift'});
     const swap = await SwapRequest.create({
@@ -76,6 +77,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     shift.status='NeedsCoverage'; await shift.save();
     await User.findByIdAndUpdate(req.user._id,{$inc:{'swapStats.sent':1}});
     const populated = await swap.populate([{path:'requester',select:'name department'},{path:'requesterShift'}]);
+    for(const u of await User.find({isActive:true}))await notify(u._id,'swap_offer','عرض تبديل جديد',req.user.name+' طرح شيفت للتبديل. راجع العروض المتاحة.',swap._id);
     res.status(201).json({success:true, swap:populated});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
@@ -99,6 +101,7 @@ router.post('/:id/accept', async (req, res) => {
     if(swap.mode==='Exchange'){
       const offered=await Shift.findOne({_id:req.body.shiftId,user:req.user._id,status:'Confirmed',type:{$ne:'AnnualLeave'}});
       if(offered&&cairoStart(offered)<=new Date())return res.status(400).json({success:false,message:'Choose a future shift.'});
+      if(offered&&await require('../models/MarketOffer').exists({shift:offered._id,status:{$in:['Open','Matched']}}))return res.status(409).json({success:false,message:'This shift has an active market offer.'});
       if(!offered) return res.status(400).json({success:false,message:'Choose your own confirmed working shift.'});
       if(await SwapRequest.exists({$or:[{requesterShift:offered._id},{acceptorShift:offered._id}],status:{$in:['Open','Proposed','Accepted']}}))return res.status(409).json({success:false,message:'That shift already has a pending request.'});
       const update=await SwapRequest.updateOne({_id:swap._id,status:'Open'},{$set:{acceptor:req.user._id,acceptorShift:offered._id,status:'Proposed'}});

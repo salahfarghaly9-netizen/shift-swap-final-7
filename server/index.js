@@ -27,6 +27,7 @@ app.use('/api/auth',          require('./routes/auth'));
 app.use('/api/users',         require('./routes/users'));
 app.use('/api/imports', require('./routes/rosterImport'));
 app.use('/api/shifts',        require('./routes/shifts'));
+app.use('/api/market',require('./routes/market'));
 app.use('/api/swaps',         require('./routes/swapRequests'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/calendar-feed', require('./routes/calendarFeed'));

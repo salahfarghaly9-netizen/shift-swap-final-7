@@ -12,7 +12,7 @@ async function notify(user,type,title,message,relatedSwap,session,key){
  if(!session)await push(user,title,message);return n;
 }
 function cairoStart(s){
- const [y,m,d]=s.date.toISOString().slice(0,10).split('-').map(Number),[h,min]=s.startTime.split(':').map(Number);
+ const [y,m,d]=new Date(s.date).toISOString().slice(0,10).split('-').map(Number),[h,min]=s.startTime.split(':').map(Number);
  let start=new Date(Date.UTC(y,m-1,d,h,min));for(let i=0;i<2;i++){const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(start).map(p=>[p.type,p.value]));const wall=Date.UTC(+parts.year,+parts.month-1,+parts.day,+parts.hour,+parts.minute);start=new Date(start.getTime()+Date.UTC(y,m-1,d,h,min)-wall);}
 return start;
 }
