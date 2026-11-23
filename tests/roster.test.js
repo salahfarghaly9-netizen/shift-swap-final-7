@@ -54,6 +54,15 @@ const ExcelJS=require('exceljs');const {MongoMemoryReplSet}=require('mongodb-mem
  await Shift.create({user:users[1]._id,date:'2027-04-01',startTime:'12:00',endTime:'16:00',type:'Morning',department:'Example team'});
  const svc=require('../server/services/notificationService');assert.equal(await svc.reminders(new Date('2027-04-01T09:30:00Z')),1);assert.equal(await svc.reminders(new Date('2027-04-01T09:35:00Z')),0);
  assert.equal((await request(app).post('/api/notifications/push').set(auth(1)).send({subscription:{endpoint:'https://127.0.0.1/attack',keys:{p256dh:'x',auth:'x'}}})).status,400);
+ const enable=await request(app).post('/api/calendar-feed/enable').set(auth(1));assert.equal(enable.status,200);const feedPath=enable.body.path;
+ let feed=await request(app).get(feedPath);assert.equal(feed.status,200);assert.match(feed.headers['content-type'],/text\/calendar/);assert.ok(feed.text.includes('UID:shift-'+exchangeB._id));assert.ok(!feed.text.includes('UID:shift-'+exchangeA._id));
+ const leave=await Shift.create({user:users[1]._id,date:'2027-05-02',startTime:'00:00',endTime:'23:59',type:'AnnualLeave',department:'Example team'});
+ const night=await Shift.create({user:users[1]._id,date:'2027-05-03',startTime:'22:00',endTime:'02:00',type:'Night',workMode:'Office',department:'Example team'});
+ feed=await request(app).get(feedPath);assert.ok(feed.text.includes('DTSTART;VALUE=DATE:20270502'));assert.ok(feed.text.includes('DTEND;VALUE=DATE:20270503'));assert.ok(feed.text.includes('DTSTART:20270503T190000Z'));assert.ok(feed.text.includes('DTEND:20270503T230000Z'));assert.ok(feed.text.includes('LOCATION:Office'));
+ await Shift.findByIdAndDelete(night._id);assert.ok(!(await request(app).get(feedPath)).text.includes('UID:shift-'+night._id));
+ const rotated=await request(app).post('/api/calendar-feed/enable').set(auth(1));assert.equal((await request(app).get(feedPath)).status,404);assert.equal((await request(app).get(rotated.body.path)).status,200);
+ await request(app).delete('/api/calendar-feed/enable').set(auth(1));assert.equal((await request(app).get(rotated.body.path)).status,404);assert.equal((await request(app).post('/api/calendar-feed/enable')).status,401);
+ console.log('PASS: isolated calendar feed, ownership after exchange, all-day leave, Cairo DST, overnight office shift, removed shift, token rotation/revocation and authentication.');
  console.log('PASS: two-way exchange consent and atomic transfer, persistent mappings, batch history, safe undo and modified protection, audit, schedule notifications, optional reminders and dedupe, push endpoint validation.');
  console.log('PASS: roster, split shifts, overnight, second header, name mapping, unknown code, explicit skip, permissions, preview-only, atomic commit, repeat protection, dedupe, overlap, formula rejection, unknown staff, weekly isolation, approval ownership transfer, template.');
  // Keep this isolated instance alive only during the local visual test.
