@@ -62,6 +62,31 @@ const ExcelJS=require('exceljs');const {MongoMemoryReplSet}=require('mongodb-mem
  await Shift.findByIdAndDelete(night._id);assert.ok(!(await request(app).get(feedPath)).text.includes('UID:shift-'+night._id));
  const rotated=await request(app).post('/api/calendar-feed/enable').set(auth(1));assert.equal((await request(app).get(feedPath)).status,404);assert.equal((await request(app).get(rotated.body.path)).status,200);
  await request(app).delete('/api/calendar-feed/enable').set(auth(1));assert.equal((await request(app).get(rotated.body.path)).status,404);assert.equal((await request(app).post('/api/calendar-feed/enable')).status,401);
+ const ma=await Shift.create({user:users[1]._id,date:'2027-06-01',startTime:'08:00',endTime:'16:00',type:'Morning',workMode:'Office',department:'Example team'});
+ const mb=await Shift.create({user:users[2]._id,date:'2027-06-02',startTime:'08:00',endTime:'16:00',type:'Morning',workMode:'Home',department:'Example team'});
+ const payload=(shiftId,day,want)=>({shiftId,start:day+'T10:00',end:day+'T12:00',wantStart:want+'T10:00',wantEnd:want+'T12:00'});
+ let mo=await request(app).post('/api/market').set(auth(1)).send(payload(ma._id,'2027-06-01','2027-06-02'));assert.equal(mo.status,201,JSON.stringify(mo.body));const marketId=mo.body.offer._id;
+ assert.equal((await request(app).post('/api/swaps').set(auth(1)).send({shiftId:ma._id})).status,409);
+ const counterOffer=await request(app).post('/api/market').set(auth(2)).send(payload(mb._id,'2027-06-02','2027-06-01'));assert.equal(counterOffer.status,201,JSON.stringify(counterOffer.body));assert.equal(counterOffer.body.matched,true);
+ assert.equal((await request(app).post('/api/market/'+marketId+'/approve').set(auth(1))).status,403);
+ assert.equal((await request(app).post('/api/market/'+marketId+'/approve').set(auth(0))).status,200);
+ const pieces=await Shift.find({date:'2027-06-01'}).sort({startTime:1});assert.equal(pieces.length,3);assert.equal(pieces[0].startTime,'08:00');assert.equal(pieces[0].endTime,'10:00');assert.equal(String(pieces[1].user),String(users[2]._id));assert.equal(pieces[1].workMode,'Office');assert.equal(pieces[2].startTime,'12:00');assert.equal(pieces.reduce((n,s)=>n+s.hours,0),8);
+ assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:false,minRestHours:null})).status,400);
+ assert.ok((await request(app).get('/api/notifications').set(auth(2))).body.notifications.some(n=>n.type==='market_offer'));
+ async function marketShift(user,date,startTime='08:00',endTime='16:00'){return Shift.create({user:users[user]._id,date,startTime,endTime,type:'Morning',department:'Example team'});}
+ async function offer(user,s,date,want,start='08:00',end='16:00'){return request(app).post('/api/market').set(auth(user)).send({shiftId:s._id,start:date+'T'+start,end:date+'T'+end,wantStart:want+'T'+start,wantEnd:want+'T'+end});}
+ let xa=await marketShift(1,'2027-07-01'),xb=await marketShift(2,'2027-07-03');
+ let oa=await offer(1,xa,'2027-07-01','2027-07-03'),ob=await offer(2,xb,'2027-07-03','2027-07-01');assert.equal(ob.body.matched,true);await request(app).post('/api/market/'+oa.body.offer._id+'/withdraw').set(auth(1));const Market=require('../server/models/MarketOffer');assert.equal((await Market.findById(ob.body.offer._id)).status,'Open');await request(app).post('/api/market/'+ob.body.offer._id+'/withdraw').set(auth(2));
+ assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:false,minRestHours:8})).status,200);
+ oa=await offer(1,xa,'2027-07-01','2027-07-03');ob=await offer(2,xb,'2027-07-03','2027-07-01');assert.equal(ob.body.matched,true);assert.equal((await Market.findById(oa.body.offer._id)).status,'Approved');assert.equal(await Shift.countDocuments({_id:{$in:[xa._id,xb._id]}}),0);
+ xa=await marketShift(1,'2027-08-01');xb=await marketShift(2,'2027-08-03');await marketShift(1,'2027-08-03','07:00','09:00');oa=await offer(1,xa,'2027-08-01','2027-08-03');ob=await offer(2,xb,'2027-08-03','2027-08-01');assert.equal(ob.body.matched,false);assert.equal((await Market.findById(oa.body.offer._id)).status,'Open');
+ xa=await marketShift(1,'2027-09-01');xb=await marketShift(2,'2027-09-03');await marketShift(1,'2027-09-03','18:00','22:00');oa=await offer(1,xa,'2027-09-01','2027-09-03');ob=await offer(2,xb,'2027-09-03','2027-09-01');assert.equal(ob.body.matched,false); // 2h rest is below configured 8.
+ assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:true,minRestHours:null})).status,200);
+ xa=await marketShift(1,'2027-10-01');xb=await marketShift(2,'2027-10-03');oa=await offer(1,xa,'2027-10-01','2027-10-03');ob=await offer(2,xb,'2027-10-03','2027-10-01');assert.equal(ob.body.matched,true);xa.notes='Later edit';await xa.save();assert.equal((await request(app).post('/api/market/'+oa.body.offer._id+'/approve').set(auth(0))).status,409);assert.equal((await request(app).post('/api/market/'+oa.body.offer._id+'/reject').set(auth(0))).status,200);
+ // Preserve a fresh fictional pair for the visual test.
+ await marketShift(1,'2027-11-01');await marketShift(2,'2027-11-03');
+ console.log('PASS: auto mode with explicit rest policy, whole-shift transfer, withdrawal unlock, overlap/rest rejection and stale-match protection.');
+ console.log('PASS: mutual-window matching, partial shift split and hours conservation, location preservation, manager-only approval, standard-offer lock, broadcast notification, safe default policy.');
  console.log('PASS: isolated calendar feed, ownership after exchange, all-day leave, Cairo DST, overnight office shift, removed shift, token rotation/revocation and authentication.');
  console.log('PASS: two-way exchange consent and atomic transfer, persistent mappings, batch history, safe undo and modified protection, audit, schedule notifications, optional reminders and dedupe, push endpoint validation.');
  console.log('PASS: roster, split shifts, overnight, second header, name mapping, unknown code, explicit skip, permissions, preview-only, atomic commit, repeat protection, dedupe, overlap, formula rejection, unknown staff, weekly isolation, approval ownership transfer, template.');
