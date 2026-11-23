@@ -27,7 +27,7 @@ async function check(a,b,session){
   // Zero-gap adjacent shifts also need explicit policy approval.
   const smallest=gaps.length?Math.min(...gaps)/3600000:null;
   if(cfg.minRestHours!==null&&smallest!==null&&smallest<cfg.minRestHours)throw Error('Minimum rest rule would be broken.');
-  if(cfg.minRestHours===null)warnings.push('Rest before/after received hours for '+(users.find(u=>String(u._id)===String(offer.owner))?.name||'Employee')+': '+(smallest===null?'no other shifts':smallest.toFixed(1)+' hours')+'. No enforced minimum. Review short or zero gaps and qualifications.');
+  if(cfg.minRestHours===null)warnings.push('الراحة قبل أو بعد الساعات المستلمة لـ '+(users.find(u=>String(u._id)===String(offer.owner))?.name||'الموظف')+': '+(smallest===null?'مفيش شيفتات تانية':smallest.toFixed(1)+' ساعة')+'. مفيش حد أدنى مفروض. راجع الفترات القصيرة أو المتصلة والمهارات قبل الموافقة.');
  }
  return {sa,sb,cfg,warnings:[...new Set(warnings)]};
 }
