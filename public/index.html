@@ -906,6 +906,15 @@ body {
 .plan-li-del   { margin-left: auto; font-size: 15px; background: none; border: none; cursor: pointer; color: var(--text4); opacity: 0; transition: opacity .15s; padding: 4px 6px; border-radius: 6px; flex-shrink: 0; }
 .plan-list-item:hover .plan-li-del { opacity: 1; }
 .plan-li-del:hover { background: var(--rbg); color: var(--red); }
+
+/* auth tabs */
+.atabs { display:flex; gap:8px; margin-bottom:12px; }
+.atab { flex:1; padding:9px; border:1.5px solid var(--border); background:#fff; border-radius:9px; font-weight:600; font-size:13px; cursor:pointer; color:var(--tx2); }
+.atab.on { border-color:var(--brand); color:var(--brand); background:var(--brand-light); }
+.aerr { color:var(--red); font-size:12px; margin-top:8px; min-height:14px; font-weight:600; }
+.dprev { margin-top:16px; border-top:1px dashed var(--border); padding-top:10px; }
+.dprev summary { font-size:12px; color:var(--tx2); cursor:pointer; font-weight:600; }
+.dprev .db { margin-top:10px; }
 </style>
 </head>
 <body>
@@ -919,15 +928,36 @@ body {
         <h1>Nextcare</h1>
         <p>Shift Swap System — نظام تبادل الشيفتات</p>
       </div>
-      <div class="db">
-        <strong>🎯 Demo Mode — اختر مستخدم للدخول فوراً</strong>
-        <span>لا حاجة لكلمة سر — No password needed</span>
-        <div class="ug" id="ugrid"></div>
+      <div class="atabs">
+        <button class="atab on" id="tab-in" onclick="authTab('in')">Sign In — دخول</button>
+        <button class="atab" id="tab-up" onclick="authTab('up')">Create Account — حساب جديد</button>
       </div>
-      <div class="sep"><span>أو ادخل بالإيميل</span></div>
-      <input type="email" class="fi" id="lei" placeholder="e.g. salah@nextcare.com"
-             onkeydown="if(event.key==='Enter')loginEmail()">
-      <button class="bf" onclick="loginEmail()">Enter Demo →</button>
+      <div id="au-in">
+        <input type="email" class="fi" id="li-em" placeholder="Email — الإيميل" autocomplete="username">
+        <input type="password" class="fi" id="li-pw" placeholder="Password — كلمة السر" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')realLogin()">
+        <button class="bf" onclick="realLogin()">Sign In →</button>
+      </div>
+      <div id="au-up" style="display:none">
+        <input class="fi" id="rg-nm" placeholder="Full name — الاسم بالكامل">
+        <input type="email" class="fi" id="rg-em" placeholder="Email — الإيميل" autocomplete="username">
+        <input type="password" class="fi" id="rg-pw" placeholder="Password (6+ characters) — كلمة السر" autocomplete="new-password">
+        <input class="fi" id="rg-dp" placeholder="Department / team — القسم">
+        <input class="fi" id="rg-mc" placeholder="Manager code (optional — كود المدير لو عندك)">
+        <button class="bf" onclick="realRegister()">Create Account →</button>
+      </div>
+      <div class="aerr" id="auth-err"></div>
+      <details class="dprev">
+        <summary>🎯 Demo preview — معاينة تجريبية ببيانات وهمية (sample data, nothing is saved)</summary>
+        <div class="db">
+          <strong>اختر مستخدم تجريبي — pick a sample user</strong>
+          <span>Demo data only — بيانات تجريبية مش حقيقية</span>
+          <div class="ug" id="ugrid"></div>
+        </div>
+        <input type="email" class="fi" id="lei" placeholder="or pick a sample user by email"
+               onkeydown="if(event.key==='Enter')loginEmail()">
+        <button class="bf" onclick="loginEmail()">Enter Demo Preview →</button>
+      </details>
     </div>
     <div class="lf">
       Designed by <strong>Salah Farghaly</strong> · salahfarghaly9@gmail.com<br>
@@ -945,7 +975,7 @@ body {
         <div class="sbli">NC</div>
         <div><div class="sbln">Nextcare</div><div class="sbls">Shift Swap System</div></div>
       </div>
-      <div class="dp">🎯 DEMO MODE</div>
+      <div class="dp" id="dpDemo" style="display:none">🎯 DEMO PREVIEW — بيانات وهمية</div>
       <div class="su">
         <div class="av" id="sbav">?</div>
         <div><div class="sun" id="sbun">—</div><div class="sur" id="sbur">—</div></div>
@@ -975,6 +1005,7 @@ body {
           <span class="nl">Management</span>
           <button class="ni on" data-p="mgrdash"  onclick="go('mgrdash')">   <span class="nic">⊞</span> Dashboard</button>
           <button class="ni"    data-p="approvals"onclick="go('approvals')"> <span class="nic">✓</span> Approvals <span class="npill" id="pb-ap">3</span></button>
+          <button class="ni"    data-p="addshift" onclick="go('addshift')">  <span class="nic">＋</span> Add Shift</button>
           <button class="ni"    data-p="team"     onclick="go('team')">      <span class="nic">👥</span> Team</button>
           <button class="ni"    data-p="reports"  onclick="go('reports')">   <span class="nic">📊</span> Reports</button>
           <button class="ni"    data-p="bday"     onclick="go('bday')">     <span class="nic">🎂</span> Birthdays</button>
@@ -997,7 +1028,7 @@ body {
         <div class="tbl2">
           <button id="mbt" onclick="toggleSB()">☰</button>
           <span class="pt" id="pgt">Dashboard</span>
-          <span class="badge ba" style="font-size:10px">DEMO</span>
+          <span class="badge ba" id="hdDemo" style="font-size:10px;display:none">DEMO PREVIEW</span>
         </div>
         <div class="tbr">
           <span style="font-size:12px;color:var(--tx2)" id="clk"></span>
@@ -1174,19 +1205,19 @@ body {
         <div class="pg" id="pg-mgrdash">
           <div class="ph"><h2>Manager Dashboard</h2><p>Team overview — Nextcare Medical Care</p></div>
           <div class="sts">
-            <div class="st sb"><div class="sl">Total Team</div><div class="sv">12</div><div class="ss">active members</div></div>
-            <div class="st sa"><div class="sl">Awaiting Approval</div><div class="sv">3</div><div class="ss">needs review</div></div>
-            <div class="st sr"><div class="sl">Urgent Requests</div><div class="sv">2</div><div class="ss">open</div></div>
-            <div class="st sg"><div class="sl">Approved Total</div><div class="sv">34</div><div class="ss">this month</div></div>
+            <div class="st sb"><div class="sl">Total Team</div><div class="sv" id="mst-total">12</div><div class="ss">active members</div></div>
+            <div class="st sa"><div class="sl">Awaiting Approval</div><div class="sv" id="mst-pend">3</div><div class="ss">needs review</div></div>
+            <div class="st sr"><div class="sl">Urgent Requests</div><div class="sv" id="mst-urg">2</div><div class="ss">open</div></div>
+            <div class="st sg"><div class="sl">Approved Total</div><div class="sv" id="mst-appr">34</div><div class="ss">this month</div></div>
           </div>
           <div class="g2">
             <div class="card"><div class="ch"><span class="ct">Pending Approvals</span><button class="btn btn-sm" onclick="go('approvals')">View all</button></div><div id="mp"></div></div>
             <div class="card"><div class="ch"><span class="ct">Coverage Stats</span></div>
               <div style="padding:18px">
-                <div class="pr"><div class="prl"><span>Approved ✅</span><span>34 (72%)</span></div><div class="prb"><div class="prf" style="width:72%;background:var(--green)"></div></div></div>
-                <div class="pr"><div class="prl"><span>Awaiting ⏳</span><span>3 (6%)</span></div><div class="prb"><div class="prf" style="width:6%;background:var(--amber)"></div></div></div>
-                <div class="pr"><div class="prl"><span>Open 🔓</span><span>5 (11%)</span></div><div class="prb"><div class="prf" style="width:11%;background:var(--brand)"></div></div></div>
-                <div class="pr"><div class="prl"><span>Rejected ❌</span><span>5 (11%)</span></div><div class="prb"><div class="prf" style="width:11%;background:var(--red)"></div></div></div>
+                <div class="pr"><div class="prl"><span>Approved ✅</span><span id="cbl-a">34 (72%)</span></div><div class="prb"><div class="prf" id="cbf-a" style="width:72%;background:var(--green)"></div></div></div>
+                <div class="pr"><div class="prl"><span>Awaiting ⏳</span><span id="cbl-p">3 (6%)</span></div><div class="prb"><div class="prf" id="cbf-p" style="width:6%;background:var(--amber)"></div></div></div>
+                <div class="pr"><div class="prl"><span>Open 🔓</span><span id="cbl-o">5 (11%)</span></div><div class="prb"><div class="prf" id="cbf-o" style="width:11%;background:var(--brand)"></div></div></div>
+                <div class="pr"><div class="prl"><span>Rejected ❌</span><span id="cbl-r">5 (11%)</span></div><div class="prb"><div class="prf" id="cbf-r" style="width:11%;background:var(--red)"></div></div></div>
               </div>
             </div>
           </div>
@@ -1205,25 +1236,39 @@ body {
 
         <!-- TEAM -->
         <div class="pg" id="pg-team">
-          <div class="ph"><h2>Team</h2><p>12 active members — Nextcare Medical Care</p></div>
+          <div class="ph"><h2>Team</h2><p id="team-count">12 active members — Nextcare Medical Care</p></div>
           <div class="card">
             <div style="overflow-x:auto">
               <table class="tbl">
-                <thead><tr><th>Name / الاسم</th><th>Department</th><th>Role</th><th>Sent</th><th>Completed</th><th>Status</th></tr></thead>
+                <thead><tr><th>Name / الاسم</th><th>Department</th><th>Role</th><th>Sent</th><th>Completed</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="tm-tb"></tbody>
               </table>
             </div>
           </div>
         </div>
 
+        <!-- ADD SHIFT (manager) -->
+        <div class="pg" id="pg-addshift">
+          <div class="ph"><h2>Add Shift</h2><p>Assign a shift to a team member</p></div>
+          <div class="fb" style="max-width:540px">
+            <div class="fg"><label class="fl">Team member ★</label><select class="fsl" id="as-user"></select></div>
+            <div class="fg"><label class="fl">Date ★</label><input type="date" class="fin" id="as-date"></div>
+            <div class="fg"><label class="fl">Start time ★</label><input type="time" class="fin" id="as-start" value="08:00"></div>
+            <div class="fg"><label class="fl">End time ★</label><input type="time" class="fin" id="as-end" value="16:00"></div>
+            <div class="fg"><label class="fl">Type ★</label><select class="fsl" id="as-type"><option>Morning</option><option>Afternoon</option><option>Night</option><option>Half</option></select></div>
+            <div class="fg"><label class="fl">Department ★</label><input type="text" class="fin" id="as-dept" placeholder="e.g. Precertification"></div>
+            <button class="btn bp" onclick="createShift()">＋ Create Shift</button>
+          </div>
+        </div>
+
         <!-- REPORTS -->
         <div class="pg" id="pg-reports">
-          <div class="ph"><h2>Reports</h2><p>Swap statistics — May 2026</p></div>
+          <div class="ph"><h2>Reports</h2><p>Swap statistics</p></div>
           <div class="sts">
-            <div class="st sb"><div class="sl">Total Requests</div><div class="sv">47</div></div>
-            <div class="st sg"><div class="sl">Approved</div><div class="sv">34</div></div>
-            <div class="st sr"><div class="sl">Rejected</div><div class="sv">5</div></div>
-            <div class="st sa"><div class="sl">Still Open</div><div class="sv">8</div></div>
+            <div class="st sb"><div class="sl">Total Requests</div><div class="sv" id="rp-tot">47</div></div>
+            <div class="st sg"><div class="sl">Approved</div><div class="sv" id="rp-appr">34</div></div>
+            <div class="st sr"><div class="sl">Rejected</div><div class="sv" id="rp-rej">5</div></div>
+            <div class="st sa"><div class="sl">Still Open</div><div class="sv" id="rp-open">8</div></div>
           </div>
           <div class="card">
             <div class="ch"><span class="ct">Top Team Members</span></div>
@@ -1771,14 +1816,14 @@ const B=new Date('2026-05-05');
 const dd=n=>{const r=new Date(B);r.setDate(r.getDate()+n);return r;};
 const fd=d=>new Date(d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 const fdt=d=>new Date(d).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-const MY_SH=[
+let MY_SH=[
   {date:dd(0),s:'08:00',e:'16:00',t:'Morning',   st:'Confirmed'},
   {date:dd(1),s:'08:00',e:'16:00',t:'Morning',   st:'Confirmed'},
   {date:dd(2),s:'16:00',e:'00:00',t:'Afternoon', st:'NeedsCoverage'},
   {date:dd(3),s:'08:00',e:'12:00',t:'Half',      st:'Confirmed'},
   {date:dd(4),s:'00:00',e:'08:00',t:'Night',     st:'Confirmed'},
 ];
-const SWAPS=[
+let SWAPS=[
   {id:'s1',req:USERS[4],date:dd(4), s:'00:00',e:'08:00',t:'Night',    dep:'Chronic Team',    r:'Medical emergency — ظرف صحي طارئ',   av:'Saturday all day',  urg:'Urgent',status:'Open'},
   {id:'s2',req:USERS[2],date:dd(9), s:'08:00',e:'16:00',t:'Morning',  dep:'Precertification IP Team', r:'Family event — مناسبة عائلية',         av:'Tuesday afternoon', urg:'Medium',status:'Open'},
   {id:'s3',req:USERS[3],date:dd(8), s:'16:00',e:'20:00',t:'Afternoon',dep:'Chronic Team',    r:'Personal appointment — موعد شخصي',    av:'Thursday morning',  urg:'Normal',status:'Open'},
@@ -1789,7 +1834,7 @@ const SWAPS=[
   {id:'s8',req:USERS[11],date:dd(-3),s:'16:00',e:'00:00',t:'Afternoon',dep:'Pool Team',   r:'',av:'',                                                        urg:'Normal',status:'Approved',acc:USERS[10]},
   {id:'s9',req:USERS[10],date:dd(-7),s:'08:00',e:'16:00',t:'Morning', dep:'Precertification IP Team', r:'Exam day — يوم امتحان',                av:'',                  urg:'Normal',status:'Rejected',acc:USERS[2]},
 ];
-const HIST=[
+let HIST=[
   {date:dd(-2), sh:'Thu May 2 · 08:00–16:00 (Morning)',    st:'Approved', note:'Covered by Yasmin Omar'},
   {date:dd(-5), sh:'Mon Apr 28 · 16:00–00:00 (Afternoon)', st:'Approved', note:'Covered by Omar Farouk'},
   {date:dd(-9), sh:'Fri Apr 24 · 00:00–08:00 (Night)',     st:'Approved', note:'Covered by Rami Selim'},
@@ -1807,6 +1852,131 @@ let NOTIFS=[
 // ════ STATE ════════════════════════════════════
 let ME=null,MODE='emp',NPO=false,SWF='all',ATAB='Accepted';
 let extraSwaps=[],STRI=0,TIPI=0;
+
+// ════ REAL MODE (live API) ════════════════════
+let REAL=false, TEAM=[];
+const TOK_KEY='nc_token';
+const DEMO_ONLY_PAGES=['gcal','notes','planner','trade','bday'];
+function tok(){return localStorage.getItem(TOK_KEY)||'';}
+async function api(path,opt={}){
+  const headers={'Content-Type':'application/json'};
+  if(tok())headers.Authorization='Bearer '+tok();
+  const r=await fetch('/api'+path,{...opt,headers:{...headers,...(opt.headers||{})}});
+  let d={};try{d=await r.json();}catch(_){}
+  if(r.status===401&&tok()){localStorage.removeItem(TOK_KEY);location.reload();throw new Error('Session expired — sign in again');}
+  if(!r.ok||d.success===false)throw new Error(d.message||(d.errors&&d.errors[0]&&d.errors[0].msg)||'Request failed');
+  return d;
+}
+function iniOf(n){const p=String(n||'?').trim().split(/\s+/);return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase();}
+const COLS=['#0055CC','#16A34A','#D97706','#DC2626','#0891B2','#BE185D','#7C3AED','#1D4ED8'];
+function colOf(id){let h=0;const t=String(id||'x');for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return COLS[h%COLS.length];}
+function mapUser(u){return {id:u._id,name:u.name,ar:u.name,email:u.email,role:u.role,dept:u.department,active:u.isActive!==false,col:colOf(u._id),ini:iniOf(u.name),sw:{s:(u.swapStats&&u.swapStats.sent)||0,r:(u.swapStats&&u.swapStats.received)||0,c:(u.swapStats&&u.swapStats.completed)||0}};}
+function mapShift(s){return {id:s._id,date:new Date(s.date),s:s.startTime,e:s.endTime,t:s.type,st:s.status,dep:s.department};}
+function mapSwap(sw){
+  const rs=sw.requesterShift||{},rq=sw.requester||{};
+  return {id:sw._id,raw:sw,
+    req:{id:rq._id,name:rq.name||'?',ar:rq.name||'?',dept:rq.department||'',col:colOf(rq._id),ini:iniOf(rq.name)},
+    date:rs.date?new Date(rs.date):new Date(),s:rs.startTime||'',e:rs.endTime||'',t:rs.type||'',dep:rs.department||'',
+    r:sw.reason||'',av:sw.availableTimes||'',urg:sw.urgency||'Normal',status:sw.status,
+    acc:sw.acceptor?{id:sw.acceptor._id,name:sw.acceptor.name}:null};
+}
+async function loadReal(){
+  const statuses=ME.role==='manager'?['Open','Accepted','Approved','Rejected']:['Open'];
+  const reqs=[api('/shifts/my'),...statuses.map(st=>api('/swaps?status='+st)),api('/swaps?mine=true'),api('/notifications')];
+  if(ME.role==='manager')reqs.push(api('/users'));
+  const res=await Promise.all(reqs);
+  const mine=res[0],lists=res.slice(1,1+statuses.length),mySw=res[1+statuses.length],notif=res[2+statuses.length];
+  const users=ME.role==='manager'?res[3+statuses.length]:{users:[]};
+  MY_SH=(mine.shifts||[]).map(mapShift);
+  const seen=new Set();let all=[];
+  lists.forEach(l=>(l.swaps||[]).forEach(sw=>{if(!seen.has(sw._id)){seen.add(sw._id);all.push(mapSwap(sw));}}));
+  const myS=(mySw.swaps||[]).map(mapSwap);
+  myS.forEach(x=>{if(!seen.has(x.id)){seen.add(x.id);all.push(x);}});
+  SWAPS=all;
+  HIST=myS.map(x=>({date:new Date(x.raw.updatedAt||x.raw.createdAt||Date.now()),sh:fd(x.date)+' · '+x.s+'–'+x.e+' ('+x.t+')',st:x.status,note:x.acc?('Covered by '+x.acc.name):(x.status==='Open'?'Waiting for coverage':(x.raw.reviewNote||''))}));
+  NOTIFS=(notif.notifications||[]).map(n=>({id:n._id,title:n.title,msg:n.message,date:new Date(n.createdAt),col:'var(--brand)',rd:!!n.isRead}));
+  TEAM=(users.users||[]).map(mapUser);
+  const pb=document.getElementById('pb-sw');if(pb)pb.textContent=SWAPS.filter(x=>x.status==='Open'&&x.req.id!==ME.id).length;
+  const pa=document.getElementById('pb-ap');if(pa)pa.textContent=SWAPS.filter(x=>x.status==='Accepted').length;
+  const dso=document.getElementById('dso');if(dso)dso.textContent=myS.filter(x=>x.status==='Open').length;
+}
+async function realReload(){try{await loadReal();renderAll();}catch(e){toast('error',e.message);}}
+function applyRealVisibility(){
+  DEMO_ONLY_PAGES.forEach(p=>document.querySelectorAll('.ni[data-p="'+p+'"]').forEach(b=>b.style.display=REAL?'none':''));
+}
+function authTab(t){
+  document.getElementById('tab-in').classList.toggle('on',t==='in');
+  document.getElementById('tab-up').classList.toggle('on',t==='up');
+  document.getElementById('au-in').style.display=t==='in'?'block':'none';
+  document.getElementById('au-up').style.display=t==='up'?'block':'none';
+  authErr('');
+}
+function authErr(m){document.getElementById('auth-err').textContent=m||'';}
+async function realLogin(){
+  const email=document.getElementById('li-em').value.trim(),password=document.getElementById('li-pw').value;
+  if(!email||!password)return authErr('Enter your email and password — اكتب الإيميل وكلمة السر');
+  authErr('');
+  try{
+    const d=await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    localStorage.setItem(TOK_KEY,d.token);REAL=true;ME=mapUser(d.user);
+    await loadReal();boot();
+  }catch(e){authErr(e.message);}
+}
+async function realRegister(){
+  const name=document.getElementById('rg-nm').value.trim(),email=document.getElementById('rg-em').value.trim(),
+        password=document.getElementById('rg-pw').value,department=document.getElementById('rg-dp').value.trim(),
+        managerCode=document.getElementById('rg-mc').value.trim();
+  if(!name||!email||!password||!department)return authErr('Fill name, email, password and department — كمّل كل البيانات');
+  authErr('');
+  try{
+    const body={name,email,password,department};
+    if(managerCode){body.role='manager';body.managerCode=managerCode;}
+    const d=await api('/auth/register',{method:'POST',body:JSON.stringify(body)});
+    localStorage.setItem(TOK_KEY,d.token);REAL=true;ME=mapUser(d.user);
+    await loadReal();boot();
+  }catch(e){authErr(e.message);}
+}
+async function rMgrStats(){
+  if(!REAL||ME.role!=='manager')return;
+  try{
+    const d=await api('/swaps/stats/summary');const st=d.stats||{};
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    set('mst-total',TEAM.length);set('mst-pend',st.accepted||0);set('mst-urg',st.urgent||0);set('mst-appr',st.approved||0);
+    set('rp-tot',st.total||0);set('rp-appr',st.approved||0);set('rp-rej',st.rejected||0);set('rp-open',st.open||0);
+    const tot=st.total||1;
+    [['a',st.approved||0],['p',st.accepted||0],['o',st.open||0],['r',st.rejected||0]].forEach(([k,v])=>{
+      const pc=Math.round(v/tot*100);
+      const lb=document.getElementById('cbl-'+k),bf=document.getElementById('cbf-'+k);
+      if(lb)lb.textContent=v+' ('+pc+'%)';if(bf)bf.style.width=pc+'%';
+    });
+  }catch(_){}
+}
+async function createShift(){
+  const userId=document.getElementById('as-user').value,date=document.getElementById('as-date').value,
+        startTime=document.getElementById('as-start').value,endTime=document.getElementById('as-end').value,
+        type=document.getElementById('as-type').value,department=document.getElementById('as-dept').value.trim();
+  if(!userId||!date||!startTime||!endTime||!department){toast('error','Fill all fields — كمّل كل البيانات');return;}
+  try{
+    await api('/shifts',{method:'POST',body:JSON.stringify({userId,date,startTime,endTime,type,department})});
+    toast('success','✓ Shift created');await realReload();go('team');
+  }catch(e){toast('error',e.message);}
+}
+async function toggleRole(id,role){
+  try{await api('/users/'+id,{method:'PATCH',body:JSON.stringify({role:role==='manager'?'employee':'manager'})});toast('success','Role updated');await realReload();}
+  catch(e){toast('error',e.message);}
+}
+async function toggleActive(id,active){
+  if(!confirm((active?'Deactivate':'Activate')+' this account?'))return;
+  try{await api('/users/'+id,{method:'PATCH',body:JSON.stringify({isActive:!active})});toast('success','Updated');await realReload();}
+  catch(e){toast('error',e.message);}
+}
+async function resetPw(id,name){
+  const pw=prompt('New password for '+name+' (min 6 chars) — share it with them privately:');
+  if(!pw)return;
+  if(pw.length<6){toast('error','Password too short');return;}
+  try{await api('/users/'+id+'/reset-password',{method:'POST',body:JSON.stringify({password:pw})});toast('success','Password updated for '+name);}
+  catch(e){toast('error',e.message);}
+}
 let tDur=600,tLeft=600,tRun=false,tIv=null;
 let brRun=false,brPh=0,brCy=0,brTm=null;
 
@@ -1821,17 +1991,16 @@ let brRun=false,brPh=0,brCy=0,brTm=null;
     </button>`).join('');
 })();
 
-function loginAs(id){ME=USERS.find(u=>u.id===id);boot();}
+function loginAs(id){REAL=false;ME=USERS.find(u=>u.id===id);boot();}
 function loginEmail(){
   const em=document.getElementById('lei').value.trim().toLowerCase();
+  REAL=false;
   ME=USERS.find(u=>u.email===em)||USERS[1];
   boot();
 }
 function logout(){
-  ME=null;MODE='emp';NPO=false;SWF='all';ATAB='Accepted';extraSwaps=[];
-  stopTimer();stopBreath();
-  document.getElementById('app').style.display='none';
-  document.getElementById('ls').style.display='flex';
+  localStorage.removeItem(TOK_KEY);
+  location.reload();
 }
 
 // ════ BOOT ════════════════════════════════════
@@ -1845,9 +2014,12 @@ function boot(){
   const h=new Date().getHours();
   const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   document.getElementById('grt').textContent=g+', '+ME.name.split(' ')[0]+' 👋';
-  document.getElementById('gsb').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · Demo Mode';
+  document.getElementById('gsb').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+(REAL?'':' · Demo preview — بيانات تجريبية');
+  document.getElementById('dpDemo').style.display=REAL?'none':'';
+  document.getElementById('hdDemo').style.display=REAL?'none':'';
+  applyRealVisibility();
   document.getElementById('dsc').textContent=ME.sw.c;
-  document.getElementById('dso').textContent=extraSwaps.length;
+  document.getElementById('dso').textContent=REAL?SWAPS.filter(x=>x.req.id===ME.id&&x.status==='Open').length:extraSwaps.length;
   document.getElementById('mtsw').style.display=ME.role==='manager'?'flex':'none';
   startClock();renderAll();
   // Render daily quote widget on dashboard
@@ -1861,10 +2033,11 @@ function boot(){
 
 function renderAll(){
   rDashSh();rDashSw();rShTb();rSwList();rPost();rHist();rMgrPend();rTeam();rAppr();rReports();rNotifs();renderStr();renderTip();
+  if(REAL){rMgrStats();rAddShift();}
 }
 
 // ════ NAVIGATION ══════════════════════════════
-const TITLES={dash:'Dashboard',shifts:'My Shifts',swaps:'Swap Requests',post:'Post Swap Request',history:'My History',brk:'Break Timer',bday:'🎂 Birthdays',gcal:'📆 Google Calendar',notes:'📋 Shift Notes',quote:'💬 Daily Quote',planner:'📅 Weekly Planner',trade:'🔄 Swap Market',mgrdash:'Manager Dashboard',approvals:'Approvals',team:'Team',reports:'Reports'};
+const TITLES={dash:'Dashboard',shifts:'My Shifts',swaps:'Swap Requests',post:'Post Swap Request',history:'My History',brk:'Break Timer',bday:'🎂 Birthdays',gcal:'📆 Google Calendar',notes:'📋 Shift Notes',quote:'💬 Daily Quote',planner:'📅 Weekly Planner',trade:'🔄 Swap Market',mgrdash:'Manager Dashboard',approvals:'Approvals',team:'Team',reports:'Reports',addshift:'Add Shift'};
 
 function go(p){
   document.querySelectorAll('.pg').forEach(s=>s.classList.remove('on'));
@@ -1953,14 +2126,24 @@ function rSwList(){
 
 function flt(v,el){SWF=v;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');rSwList();}
 
-function acceptSw(id,name){
+async function acceptSw(id,name){
   if(!confirm('Accept swap from '+name+'?\nThis will be sent to manager for approval.'))return;
+  if(REAL){
+    try{await api('/swaps/'+id+'/accept',{method:'POST'});toast('success','Accepted! Awaiting manager approval ✓');await realReload();}
+    catch(e){toast('error',e.message);}
+    return;
+  }
   const sw=[...SWAPS,...extraSwaps].find(s=>s.id===id);if(sw)sw.status='Accepted';
   NOTIFS.unshift({id:'n'+Date.now(),title:'Swap Accepted ✓',msg:'You accepted '+name+'\'s swap — awaiting manager approval',date:new Date(),col:'var(--green)',rd:false});
   rSwList();rDashSw();rNotifs();toast('success','Accepted! Awaiting manager approval ✓');
 }
 
-function withdrawSw(id){
+async function withdrawSw(id){
+  if(REAL){
+    try{await api('/swaps/'+id+'/withdraw',{method:'POST'});toast('info','Swap request withdrawn');await realReload();}
+    catch(e){toast('error',e.message);}
+    return;
+  }
   const i=extraSwaps.findIndex(s=>s.id===id);if(i!==-1)extraSwaps.splice(i,1);
   const s=SWAPS.find(x=>x.id===id);if(s)s.status='Withdrawn';
   document.getElementById('dso').textContent=extraSwaps.length;
@@ -1972,10 +2155,18 @@ function rPost(){
     MY_SH.filter(s=>s.st==='Confirmed').map((s,i)=>`<option value="${i}">${fd(s.date)} · ${s.s}–${s.e} (${s.t})</option>`).join('');
 }
 
-function postSwap(){
+async function postSwap(){
   const idx=document.getElementById('p-sh').value;
   if(idx===''){toast('error','Please select a shift');return;}
   const s=MY_SH[parseInt(idx)];
+  if(REAL){
+    try{
+      await api('/swaps',{method:'POST',body:JSON.stringify({shiftId:s.id,reason:document.getElementById('p-re').value.trim(),availableTimes:document.getElementById('p-av').value.trim(),urgency:document.getElementById('p-ur').value})});
+      document.getElementById('p-re').value='';document.getElementById('p-av').value='';
+      toast('success','📢 Swap request posted to the team!');await realReload();go('swaps');
+    }catch(e){toast('error',e.message);}
+    return;
+  }
   extraSwaps.push({
     id:'ps'+Date.now(),req:ME,date:s.date,s:s.s,e:s.e,t:s.t,dep:ME.dept,
     r:document.getElementById('p-re').value.trim(),
@@ -2048,22 +2239,38 @@ function rAppr(){
 
 function setATab(t,el){ATAB=t;document.querySelectorAll('.pgtb').forEach(b=>b.classList.remove('on'));el.classList.add('on');rAppr();}
 
-function mAppr(id){
+async function mAppr(id){
   if(!confirm('Approve this swap? Both parties will be notified.'))return;
+  if(REAL){
+    try{await api('/swaps/'+id+'/approve',{method:'POST',body:'{}'});toast('success','✓ Swap approved — both parties notified!');await realReload();}
+    catch(e){toast('error',e.message);}
+    return;
+  }
   const sw=SWAPS.find(s=>s.id===id);if(sw)sw.status='Approved';
   NOTIFS.unshift({id:'n'+Date.now(),title:'Swap Approved ✅',msg:'You approved the swap for '+(sw?.req.name||'?'),date:new Date(),col:'var(--green)',rd:false});
   rAppr();rMgrPend();rNotifs();toast('success','✓ Swap approved — both parties notified!');
 }
 
-function mRej(id){
+async function mRej(id){
   const reason=prompt('Reason for rejection (optional):')||'';
+  if(REAL){
+    try{await api('/swaps/'+id+'/reject',{method:'POST',body:JSON.stringify({note:reason})});toast('warning','Swap rejected — parties notified');await realReload();}
+    catch(e){toast('error',e.message);}
+    return;
+  }
   const sw=SWAPS.find(s=>s.id===id);if(sw)sw.status='Rejected';
   NOTIFS.unshift({id:'n'+Date.now(),title:'Swap Rejected ❌',msg:'Swap rejected'+(reason?' — '+reason:''),date:new Date(),col:'var(--red)',rd:false});
   rAppr();rMgrPend();rNotifs();toast('warning','Swap rejected — parties notified');
 }
 
+function rAddShift(){
+  const sel=document.getElementById('as-user');if(!sel)return;
+  sel.innerHTML='<option value="">— Choose team member —</option>'+TEAM.filter(u=>u.active).map(u=>`<option value="${u.id}">${u.name} (${u.dept})</option>`).join('');
+}
 function rTeam(){
-  document.getElementById('tm-tb').innerHTML=USERS.map(u=>`
+  const list=REAL?TEAM:USERS;
+  const tc=document.getElementById('team-count');if(tc&&REAL)tc.textContent=list.filter(u=>u.active).length+' active members — Nextcare Medical Care';
+  document.getElementById('tm-tb').innerHTML=list.map(u=>`
     <tr>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2074,12 +2281,17 @@ function rTeam(){
       <td>${u.dept}</td>
       <td><span class="badge ${u.role==='manager'?'bpu':'bgy'}">${u.role}</span></td>
       <td>${u.sw.s}</td><td>${u.sw.c}</td>
-      <td><span class="badge bg2">● Active</span></td>
+      <td><span class="badge ${u.active===false?'br':'bg2'}">${u.active===false?'○ Inactive':'● Active'}</span></td>
+      <td>${REAL&&ME.role==='manager'&&u.id!==ME.id
+        ?'<button class="btn btn-xs" onclick="toggleRole(\''+u.id+'\',\''+u.role+'\')">'+(u.role==='manager'?'Make employee':'Make manager')+'</button> '
+          +'<button class="btn btn-xs" onclick="resetPw(\''+u.id+'\',\''+u.name.replace(/'/g,"\\'")+'\')">Reset PW</button> '
+          +'<button class="btn bd2 btn-xs" onclick="toggleActive(\''+u.id+'\','+(u.active!==false)+')">'+(u.active===false?'Activate':'Deactivate')+'</button>'
+        :'—'}</td>
     </tr>`).join('');
 }
 
 function rReports(){
-  document.getElementById('rp-tb').innerHTML=[...USERS].sort((a,b)=>b.sw.c-a.sw.c).slice(0,5).map((u,i)=>`
+  document.getElementById('rp-tb').innerHTML=[...(REAL?TEAM:USERS)].sort((a,b)=>b.sw.c-a.sw.c).slice(0,5).map((u,i)=>`
     <tr>
       <td><strong>#${i+1}</strong></td>
       <td>
@@ -2103,8 +2315,8 @@ function rNotifs(){
       <div class="nm"><strong>${n.title}</strong><br>${n.msg}<div class="nt">${fdt(n.date)}</div></div>
     </div>`).join('');
 }
-function readN(id,el){const n=NOTIFS.find(x=>x.id===id);if(n)n.rd=true;el.classList.remove('ur');el.querySelector('.nd').style.background='var(--bd)';rNotifs();}
-function clearNotifs(){NOTIFS.forEach(n=>n.rd=true);rNotifs();toast('info','All notifications cleared');}
+function readN(id,el){if(REAL)api('/notifications/'+id+'/read',{method:'PATCH'}).catch(()=>{});const n=NOTIFS.find(x=>x.id===id);if(n)n.rd=true;el.classList.remove('ur');el.querySelector('.nd').style.background='var(--bd)';rNotifs();}
+function clearNotifs(){if(REAL)api('/notifications/read-all',{method:'PATCH'}).catch(()=>{});NOTIFS.forEach(n=>n.rd=true);rNotifs();toast('info','All notifications cleared');}
 function toggleNP(){NPO=!NPO;document.getElementById('npp').classList.toggle('open',NPO);}
 
 // ════ BREAK TIMER ═════════════════════════════
@@ -3472,6 +3684,16 @@ document.getElementById && (() => {
   if (m) m.addEventListener('click', e => { if (e.target === m) closeModal(); });
 })();
 document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+
+// Restore a real session if a token exists
+(async function restoreSession(){
+  if(!localStorage.getItem(TOK_KEY))return;
+  try{
+    const d=await api('/auth/me');
+    REAL=true;ME=mapUser(d.user);
+    await loadReal();boot();
+  }catch(e){localStorage.removeItem(TOK_KEY);}
+})();
 
 </script>
 </body>

@@ -29,4 +29,16 @@ router.patch('/:id', managerOnly, async (req, res) => {
     res.json({success:true, user});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
+// Manager can set a new password for a team member (they share it in person).
+router.post('/:id/reset-password', managerOnly, async (req, res) => {
+  try {
+    const pw = String(req.body.password||'');
+    if (pw.length < 6) return res.status(400).json({success:false,message:'Password must be at least 6 characters'});
+    const user = await User.findById(req.params.id).select('+password');
+    if (!user) return res.status(404).json({success:false,message:'User not found'});
+    user.password = pw;
+    await user.save();
+    res.json({success:true, message:'Password updated'});
+  } catch(err) { res.status(500).json({success:false,message:err.message}); }
+});
 module.exports = router;

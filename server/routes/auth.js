@@ -15,9 +15,18 @@ router.post('/register', [
   const errs = validationResult(req);
   if (!errs.isEmpty()) return res.status(400).json({success:false, errors:errs.array()});
   try {
-    const {name,email,password,department,role} = req.body;
+    const {name,email,password,department,role,managerCode} = req.body;
     if (await User.findOne({email})) return res.status(409).json({success:false,message:'Email already registered'});
-    const user = await User.create({name,email,password,department,role:role||'employee'});
+    // Public registration always creates an employee. A manager account requires
+    // the setup code (MANAGER_SETUP_CODE env var) or promotion by an existing manager.
+    let finalRole = 'employee';
+    if (role === 'manager') {
+      const code = process.env.MANAGER_SETUP_CODE;
+      if (!code || managerCode !== code)
+        return res.status(403).json({success:false,message:'Manager registration requires a valid setup code'});
+      finalRole = 'manager';
+    }
+    const user = await User.create({name,email,password,department,role:finalRole});
     res.status(201).json({success:true, token:sign(user._id), user:user.toSafeObject()});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
