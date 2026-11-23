@@ -5,6 +5,7 @@ const notifSchema = new mongoose.Schema({
   title:       { type:String, required:true },
   message:     { type:String, required:true },
   relatedSwap: { type:mongoose.Schema.Types.ObjectId, ref:'SwapRequest', default:null },
+  relatedOffer:{type:mongoose.Schema.Types.ObjectId,ref:'MarketOffer',default:null},
   deliveryKey:{type:String},
   isRead:      { type:Boolean, default:false }
 }, { timestamps:true });
