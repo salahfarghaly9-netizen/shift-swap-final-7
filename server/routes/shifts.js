@@ -22,8 +22,7 @@ router.get('/my', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const filter = {};
-    if (req.user.role==='employee'&&!req.query.userId) filter.user=req.user._id;
-    else if (req.query.userId) filter.user=req.query.userId;
+    if(req.user.role!=='manager'){if(req.query.userId&&req.query.userId!==String(req.user._id))return res.status(403).json({success:false,message:'You can only read your own schedule.'});filter.user=req.user._id;}else if(req.query.userId)filter.user=req.query.userId;
     if (req.query.status) filter.status=req.query.status;
     if (req.query.department) filter.department=req.query.department;
     if (req.query.from||req.query.to) {
