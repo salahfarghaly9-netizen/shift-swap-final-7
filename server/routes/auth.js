@@ -17,17 +17,10 @@ router.post('/register', [
   try {
     const {name,email,password,department,role,managerCode} = req.body;
     if (await User.findOne({email})) return res.status(409).json({success:false,message:'Email already registered'});
-    // Public registration always creates an employee. A manager account requires
-    // the setup code (MANAGER_SETUP_CODE env var) or promotion by an existing manager.
-    let finalRole = 'employee';
-    if (role === 'manager') {
-      const code = process.env.MANAGER_SETUP_CODE;
-      if (!code || managerCode !== code)
-        return res.status(403).json({success:false,message:'Manager registration requires a valid setup code'});
-      finalRole = 'manager';
-    }
-    const user = await User.create({name,email,password,department,role:finalRole});
-    res.status(201).json({success:true, token:sign(user._id), user:user.toSafeObject()});
+    // All public registrations require an existing manager's approval.
+    if(role==='manager'||managerCode)return res.status(403).json({success:false,message:'Manager accounts can only be granted by an existing manager.'});
+    await User.create({name,email,password,department,role:'employee',membership:'pending'});
+    res.status(201).json({success:true,pending:true,message:'Registration received. Your manager must approve your account before you can sign in.'});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
 
@@ -42,6 +35,7 @@ router.post('/login', [
     const user = await User.findOne({email}).select('+password');
     if (!user || !(await user.comparePassword(password)))
       return res.status(401).json({success:false,message:'Invalid email or password'});
+    if(user.role!=='manager'&&user.membership!=='approved')return res.status(403).json({success:false,message:'Your account is awaiting manager approval.'});
     if (!user.isActive) return res.status(403).json({success:false,message:'Account inactive'});
     res.json({success:true, token:sign(user._id), user:user.toSafeObject()});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
