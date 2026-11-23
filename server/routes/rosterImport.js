@@ -76,6 +76,7 @@ router.post('/:id/undo',async(req,res)=>{
  if(shifts.length!==doc.snapshot.length)throw new Error('Some shifts were removed or changed. Undo is blocked; review individually.');
  for(const snap of doc.snapshot){const s=shifts.find(x=>String(x._id)===String(snap._id));if(!s||new Date(s.updatedAt).getTime()!==new Date(snap.updatedAt).getTime()||String(s.user)!==String(snap.user))throw new Error('A shift changed after import. Undo is blocked to protect later changes.');}
  if(await Swap.exists({$or:[{requesterShift:{$in:shifts.map(s=>s._id)}},{acceptorShift:{$in:shifts.map(s=>s._id)}}]}).session(session))throw new Error('This batch has swap activity. Undo is blocked to protect that history.');
+ if(await require('../models/MarketOffer').exists({shift:{$in:shifts.map(s=>s._id)}}).session(session))throw new Error('This batch has market activity. Review individually.');
  if(shifts.some(s=>require('../services/notificationService').cairoStart(s)<=new Date()))throw new Error('A shift in this batch has started or passed. Undo is blocked.');
  await Audit.create([{actor:req.user._id,action:'roster_undone',resource:String(doc._id),before:doc.snapshot}],{session});
  await Shift.deleteMany({importBatch:doc._id}).session(session);removed=shifts.length;doc.undoneAt=new Date();doc.undoneBy=req.user._id;await doc.save({session});
