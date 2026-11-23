@@ -17,7 +17,7 @@ function interval(s){const a=new Date(s.date).getTime()+minutes(s.startTime)*600
 function minutes(t){const [h,m]=t.split(':').map(Number);return h*60+m;}
 function overlap(a,b){const [s,e]=interval(a),[x,y]=interval(b);return s<y&&x<e;}
 async function validate(rows,session){
- const users=await User.find({email:{$in:[...new Set(rows.map(r=>r.email))]},isActive:true}).session(session||null);
+ const users=await User.find({email:{$in:[...new Set(rows.map(r=>r.email))]},isActive:true,$or:[{role:'manager'},{membership:'approved'}]}).session(session||null);
  const byEmail=new Map(users.map(u=>[u.email,u]));const errors=[],ready=[];let duplicates=0;
  const existing=await Shift.find({user:{$in:users.map(u=>u._id)}}).session(session||null);
  for(const r of rows){const u=byEmail.get(r.email);if(!u){errors.push({row:r.row,message:`No active account for ${r.email}. Register first.`});continue;}
@@ -60,7 +60,7 @@ router.post('/:id/commit',async(req,res)=>{
  const v=await validate(doc.rows,session);if(v.errors.length)throw new Error('Schedule changed or conflicts found. Upload again for a fresh preview.');
  let inserted=[];if(v.rows.length)inserted=await Shift.insertMany(v.rows.map(r=>({user:r.user,date:r.date,startTime:r.startTime,endTime:r.endTime,type:r.type,workMode:r.workMode,department:r.department,importBatch:doc._id,notes:'Imported from Excel'})),{session});
  doc.snapshot=inserted.map(s=>({_id:s._id,user:s.user,date:s.date,startTime:s.startTime,endTime:s.endTime,type:s.type,department:s.department,workMode:s.workMode,status:s.status,updatedAt:s.updatedAt}));
- for(const [officer,email] of Object.entries(doc.people||{})){if(!officer.trim()||!email)continue;const exists=await User.exists({email,isActive:true}).session(session);if(exists)await Mapping.updateOne({officer},{$set:{email,reviewedBy:req.user._id}},{upsert:true,session});}
+ for(const [officer,email] of Object.entries(doc.people||{})){if(!officer.trim()||!email)continue;const exists=await User.exists({email,isActive:true,$or:[{role:'manager'},{membership:'approved'}]}).session(session);if(exists)await Mapping.updateOne({officer},{$set:{email,reviewedBy:req.user._id}},{upsert:true,session});}
  for(const uid of [...new Set(inserted.map(s=>String(s.user)))])await notify(uid,'schedule_published','New schedule','New shifts were added. Open My Schedule to review.',null,session);
  await Audit.create([{actor:req.user._id,action:'roster_published',resource:String(doc._id),after:doc.snapshot}],{session});
  count=v.rows.length;duplicates=v.duplicates;doc.expiresAt=null;doc.committedAt=new Date();await doc.save({session});
