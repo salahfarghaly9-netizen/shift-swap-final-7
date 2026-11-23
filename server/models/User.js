@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   role:       { type:String, enum:['employee','manager'], default:'employee' },
   department: { type:String, required:true },
   isActive:   { type:Boolean, default:true },
+  calendarTokenHash:{type:String,select:false,index:true},
   reminderMinutes:{type:Number,enum:[0,15,30,60,120],default:0},
   pushSubscriptions:{type:[mongoose.Schema.Types.Mixed],default:[],select:false},
   swapStats:  { sent:{type:Number,default:0}, received:{type:Number,default:0}, completed:{type:Number,default:0} }
@@ -16,5 +17,5 @@ userSchema.pre('save', async function(next) {
   this.password = await bcrypt.hash(this.password, 12); next();
 });
 userSchema.methods.comparePassword = function(c) { return bcrypt.compare(c, this.password); };
-userSchema.methods.toSafeObject = function() { const o=this.toObject(); delete o.password; return o; };
+userSchema.methods.toSafeObject = function() { const o=this.toObject(); delete o.password; delete o.calendarTokenHash; delete o.pushSubscriptions; return o; };
 module.exports = mongoose.model('User', userSchema);
