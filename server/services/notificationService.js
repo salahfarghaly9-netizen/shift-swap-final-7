@@ -25,7 +25,7 @@ async function reminders(now=new Date()){
  const start=cairoStart(s);
  const delta=start-now;if(delta<=0||delta>u.reminderMinutes*60000)continue;
  const key='shift:'+s._id+':'+start.toISOString()+':'+u._id;
- const n=await notify(u._id,'shift_reminder','تذكير بالشيفت',`شيفتك ${s.startTime} - ${s.endTime} بتوقيت القاهرة. ${s.workMode==='Office'?'من الشركة':s.workMode==='Home'?'من البيت':''}`,null,null,key);if(n)sent++;
+ const n=await notify(u._id,'shift_reminder','Shift reminder',`Your shift ${s.startTime} - ${s.endTime} Cairo time. ${s.workMode==='Office'?'In the office':s.workMode==='Home'?'At home':''}`,null,null,key);if(n)sent++;
  }}return sent;
 }
 function startReminders(){const tick=()=>Promise.all([reminders(),require('./breakReminders').breakReminders()]).catch(e=>console.warn('Reminder check:',e.message));tick();const t=setInterval(tick,60000);t.unref();}
