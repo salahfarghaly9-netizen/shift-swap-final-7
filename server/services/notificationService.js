@@ -5,11 +5,11 @@ const Setting=require('../models/AppSetting');
 const webpush=require('web-push');
 let keys;
 async function pushKeys(){if(keys)return keys;let s=await Setting.findOne({key:'vapid'});if(!s){try{s=await Setting.create({key:'vapid',value:webpush.generateVAPIDKeys()});}catch(e){if(e.code!==11000)throw e;s=await Setting.findOne({key:'vapid'});}}keys=s.value;webpush.setVapidDetails('mailto:salahfarghaly9@gmail.com',keys.publicKey,keys.privateKey);return keys;}
-async function push(userId,title,message){try{await pushKeys();const u=await User.findById(userId).select('+pushSubscriptions');for(const sub of u?.pushSubscriptions||[]){try{await webpush.sendNotification(sub,JSON.stringify({title,body:message,url:'/'}),{TTL:3600});}catch(e){if([404,410].includes(e.statusCode))await User.updateOne({_id:userId},{$pull:{pushSubscriptions:{endpoint:sub.endpoint}}});}}}catch(e){console.warn('Push delivery unavailable:',e.message);}}
-async function notify(user,type,title,message,relatedSwap,session,key){
+async function push(userId,title,message,ttl=3600){try{await pushKeys();const u=await User.findById(userId).select('+pushSubscriptions');for(const sub of u?.pushSubscriptions||[]){try{await webpush.sendNotification(sub,JSON.stringify({title,body:message,url:'/'}),{TTL:ttl});}catch(e){if([404,410].includes(e.statusCode))await User.updateOne({_id:userId},{$pull:{pushSubscriptions:{endpoint:sub.endpoint}}});}}}catch(e){console.warn('Push delivery unavailable:',e.message);}}
+async function notify(user,type,title,message,relatedSwap,session,key,ttl){
  const data={user,type,title,message,relatedSwap:relatedSwap||null};if(key)data.deliveryKey=key;
  let n;try{[n]=await Notification.create([data],session?{session}:{});}catch(e){if(e.code===11000)return null;throw e;}
- if(!session)await push(user,title,message);return n;
+ if(!session)await push(user,title,message,ttl);return n;
 }
 function cairoStart(s){
  const [y,m,d]=new Date(s.date).toISOString().slice(0,10).split('-').map(Number),[h,min]=s.startTime.split(':').map(Number);
@@ -28,5 +28,5 @@ async function reminders(now=new Date()){
  const n=await notify(u._id,'shift_reminder','تذكير بالشيفت',`شيفتك ${s.startTime} - ${s.endTime} بتوقيت القاهرة. ${s.workMode==='Office'?'من الشركة':s.workMode==='Home'?'من البيت':''}`,null,null,key);if(n)sent++;
  }}return sent;
 }
-function startReminders(){const tick=()=>reminders().catch(e=>console.warn('Reminder check:',e.message));tick();const t=setInterval(tick,60000);t.unref();}
+function startReminders(){const tick=()=>Promise.all([reminders(),require('./breakReminders').breakReminders()]).catch(e=>console.warn('Reminder check:',e.message));tick();const t=setInterval(tick,60000);t.unref();}
 module.exports={cairoStart,notify,push,pushKeys,reminders,startReminders};
