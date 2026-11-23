@@ -8,7 +8,7 @@ const { protect, managerOnly } = require('../middleware/auth');
 const router = express.Router();
 router.use(protect);
 
-const {notify}=require('../services/notificationService');
+const {notify,cairoStart}=require('../services/notificationService');
 
 router.get('/stats/summary', managerOnly, async (req, res) => {
   try {
@@ -63,6 +63,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     const shift = await Shift.findById(req.body.shiftId);
     if (!shift) return res.status(404).json({success:false,message:'Shift not found'});
     if (shift.user.toString()!==req.user._id.toString()) return res.status(403).json({success:false,message:"This shift doesn't belong to you"});
+    if(cairoStart(shift)<=new Date())return res.status(400).json({success:false,message:'Shift has already started.'});
     if(shift.type==='AnnualLeave')return res.status(400).json({success:false,message:'Annual leave cannot be offered for coverage'});
     if (shift.status==='Swapped') return res.status(400).json({success:false,message:'Shift already swapped'});
     const existing = await SwapRequest.findOne({$or:[{requesterShift:shift._id},{acceptorShift:shift._id}],status:{$in:['Open','Proposed','Accepted']}});
@@ -83,8 +84,9 @@ router.post('/:id/consent',async(req,res)=>{try{
  const sw=await SwapRequest.findOne({_id:req.params.id,requester:req.user._id,status:'Proposed',mode:'Exchange'});
  if(!sw)return res.status(409).json({success:false,message:'No proposal awaiting your consent.'});
  const a=await Shift.findById(sw.requesterShift),b=await Shift.findById(sw.acceptorShift);
+ if(a&&b&&(cairoStart(a)<=new Date()||cairoStart(b)<=new Date()))return res.status(409).json({success:false,message:'A shift has already started.'});
  if(!a||!b||String(a.user)!==String(sw.requester)||String(b.user)!==String(sw.acceptor)||b.status!=='Confirmed')return res.status(409).json({success:false,message:'Shifts changed. Withdraw and start again.'});
- sw.consentSnapshot={a:{date:a.date,startTime:a.startTime,endTime:a.endTime,workMode:a.workMode,department:a.department},b:{date:b.date,startTime:b.startTime,endTime:b.endTime,workMode:b.workMode,department:b.department}};sw.status='Accepted';sw.consentAt=new Date();await sw.save();await notify(sw.acceptor,'swap_accepted','تمت الموافقة على العرض','الطرف التاني وافق. التبديل في انتظار موافقة المدير.',sw._id);
+ sw.consentSnapshot={a:{date:a.date,startTime:a.startTime,endTime:a.endTime,workMode:a.workMode,department:a.department,type:a.type},b:{date:b.date,startTime:b.startTime,endTime:b.endTime,workMode:b.workMode,department:b.department,type:b.type}};sw.status='Accepted';sw.consentAt=new Date();await sw.save();await notify(sw.acceptor,'swap_accepted','تمت الموافقة على العرض','الطرف التاني وافق. التبديل في انتظار موافقة المدير.',sw._id);
  res.json({success:true});}catch(e){res.status(400).json({success:false,message:e.message});}});
 
 router.post('/:id/accept', async (req, res) => {
@@ -93,8 +95,10 @@ router.post('/:id/accept', async (req, res) => {
     if (!swap) return res.status(404).json({success:false,message:'Swap not found'});
     if (swap.status!=='Open') return res.status(400).json({success:false,message:'Swap not open'});
     if (swap.requester._id.toString()===req.user._id.toString()) return res.status(400).json({success:false,message:"Can't accept your own swap"});
+    const source=await Shift.findById(swap.requesterShift);if(!source||cairoStart(source)<=new Date())return res.status(409).json({success:false,message:'Shift has already started or was removed.'});
     if(swap.mode==='Exchange'){
       const offered=await Shift.findOne({_id:req.body.shiftId,user:req.user._id,status:'Confirmed',type:{$ne:'AnnualLeave'}});
+      if(offered&&cairoStart(offered)<=new Date())return res.status(400).json({success:false,message:'Choose a future shift.'});
       if(!offered) return res.status(400).json({success:false,message:'Choose your own confirmed working shift.'});
       if(await SwapRequest.exists({$or:[{requesterShift:offered._id},{acceptorShift:offered._id}],status:{$in:['Open','Proposed','Accepted']}}))return res.status(409).json({success:false,message:'That shift already has a pending request.'});
       const update=await SwapRequest.updateOne({_id:swap._id,status:'Open'},{$set:{acceptor:req.user._id,acceptorShift:offered._id,status:'Proposed'}});
@@ -138,11 +142,13 @@ router.post('/:id/approve', managerOnly, async (req, res) => {
       const target = await User.findOne({_id:swap.acceptor._id,isActive:true}).session(session);
       const shift = await Shift.findById(swap.requesterShift._id).session(session);
       if(!target||!shift||String(shift.user)!==String(swap.requester._id))throw new Error('Shift ownership or employee status changed.');
+      if(cairoStart(shift)<=new Date())throw new Error('Shift has already started.');
       const beforeShift=shift.toObject();
       const other=current.mode==='Exchange'?await Shift.findById(current.acceptorShift).session(session):null;
       const beforeOther=other?.toObject();
       if(current.mode==='Exchange'&&(!current.consentAt||!other||String(other.user)!==String(target._id)||other.status!=='Confirmed'||other.type==='AnnualLeave'))throw new Error('Both employees must consent to unchanged shifts.');
-      if(other){const snapshot=current.consentSnapshot;const same=(x,y)=>y&&new Date(x.date).getTime()===new Date(y.date).getTime()&&['startTime','endTime','workMode','department'].every(k=>x[k]===y[k]);if(!snapshot||!same(shift,snapshot.a)||!same(other,snapshot.b))throw new Error('Shift details changed since consent. Start a new request so both employees can review.');}
+      if(other&&cairoStart(other)<=new Date())throw new Error('Counter shift has already started.');
+      if(other){const snapshot=current.consentSnapshot;const same=(x,y)=>y&&new Date(x.date).getTime()===new Date(y.date).getTime()&&['startTime','endTime','workMode','department','type'].every(k=>x[k]===y[k]);if(!snapshot||!same(shift,snapshot.a)||!same(other,snapshot.b))throw new Error('Shift details changed since consent. Start a new request so both employees can review.');}
       const excluded=[shift._id,...(other?[other._id]:[])];
       const {overlap}=require('./rosterImport');
       const candidates=await Shift.find({user:target._id,_id:{$nin:excluded}}).session(session);
