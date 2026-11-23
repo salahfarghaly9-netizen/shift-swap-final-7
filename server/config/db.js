@@ -6,6 +6,8 @@ const connectDB = async () => {
   }
   try {
     await mongoose.connect(process.env.MONGODB_URI);
+    const indexes=await mongoose.connection.db.collection('rosterimports').indexes().catch(()=>[]);
+    if(indexes.some(i=>i.name==='createdAt_1'&&i.expireAfterSeconds!==undefined))await mongoose.connection.db.collection('rosterimports').dropIndex('createdAt_1');
     console.log('✅ MongoDB Atlas connected');
   } catch (err) {
     console.error('❌ MongoDB failed:', err.message);

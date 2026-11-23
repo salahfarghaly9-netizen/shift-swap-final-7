@@ -5,7 +5,9 @@ const notifSchema = new mongoose.Schema({
   title:       { type:String, required:true },
   message:     { type:String, required:true },
   relatedSwap: { type:mongoose.Schema.Types.ObjectId, ref:'SwapRequest', default:null },
+  deliveryKey:{type:String},
   isRead:      { type:Boolean, default:false }
 }, { timestamps:true });
 notifSchema.index({ user:1, isRead:1, createdAt:-1 });
+notifSchema.index({deliveryKey:1},{unique:true,sparse:true});
 module.exports = mongoose.model('Notification', notifSchema);

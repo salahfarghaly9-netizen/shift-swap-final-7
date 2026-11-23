@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const Audit=require('../models/ScheduleAudit');
 const Shift = require('../models/Shift');
 const { protect, managerOnly } = require('../middleware/auth');
 const router = express.Router();
@@ -49,6 +50,7 @@ router.post('/', managerOnly, [
       department:req.body.department, type:req.body.type,
       status:req.body.status||'Confirmed', notes:req.body.notes
     });
+    await Audit.create({actor:req.user._id,action:'shift_created',resource:String(shift._id),after:shift.toObject()});
     res.status(201).json({success:true, shift});
   } catch(err) {
     if (err.code===11000) return res.status(409).json({success:false,message:'Shift already exists at this time'});
@@ -62,9 +64,11 @@ router.patch('/:id', async (req, res) => {
     if (!shift) return res.status(404).json({success:false,message:'Shift not found'});
     const isOwner = shift.user.toString()===req.user._id.toString();
     if (!isOwner&&req.user.role!=='manager') return res.status(403).json({success:false,message:'Not authorised'});
+    const before=shift.toObject();
     const allowed = req.user.role==='manager' ? ['status','startTime','endTime','date','department','type','notes'] : ['notes'];
     allowed.forEach(k => { if(req.body[k]!==undefined) shift[k]=req.body[k]; });
     await shift.save();
+    await Audit.create({actor:req.user._id,action:'shift_updated',resource:String(shift._id),before,after:shift.toObject()});
     res.json({success:true, shift});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
@@ -73,6 +77,7 @@ router.delete('/:id', managerOnly, async (req, res) => {
   try {
     const shift = await Shift.findByIdAndDelete(req.params.id);
     if (!shift) return res.status(404).json({success:false,message:'Shift not found'});
+    await Audit.create({actor:req.user._id,action:'shift_deleted',resource:String(shift._id),before:shift.toObject()});
     res.json({success:true,message:'Shift deleted'});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
