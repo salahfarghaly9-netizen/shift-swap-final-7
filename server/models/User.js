@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   role:       { type:String, enum:['employee','manager'], default:'employee' },
   department: { type:String, required:true },
   isActive:   { type:Boolean, default:true },
+  reminderMinutes:{type:Number,enum:[0,15,30,60,120],default:0},
+  pushSubscriptions:{type:[mongoose.Schema.Types.Mixed],default:[],select:false},
   swapStats:  { sent:{type:Number,default:0}, received:{type:Number,default:0}, completed:{type:Number,default:0} }
 }, { timestamps:true });
 userSchema.pre('save', async function(next) {
