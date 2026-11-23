@@ -6,6 +6,7 @@ const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 router.use(protect);
+router.use('/:shiftId',async(req,res,next)=>{try{const shift=await Shift.findById(req.params.shiftId);if(!shift)return res.status(404).json({success:false,message:'Shift not found'});if(req.user.role!=='manager'&&String(shift.user)!==String(req.user._id))return res.status(403).json({success:false,message:'You can only read notes on your own shifts.'});next();}catch(e){res.status(400).json({success:false,message:'Invalid shift'});}});
 
 // ── GET /api/shift-notes/:shiftId ─────────────────────────────
 // Get all notes for a shift (creates empty doc if none exist yet)

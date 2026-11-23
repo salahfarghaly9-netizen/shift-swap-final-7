@@ -24,6 +24,7 @@ app.use(express.urlencoded({extended:false}));
 if (process.env.NODE_ENV !== 'test') app.use(morgan((tokens,req,res)=>req.path.startsWith('/api/calendar-feed/feed/')?'GET /api/calendar-feed/feed/[redacted] '+res.statusCode:tokens.method(req,res)+' '+tokens.url(req,res)+' '+tokens.status(req,res)));
 
 app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/team-roster',require('./routes/teamRoster'));
 app.use('/api/users',         require('./routes/users'));
 app.use('/api/imports', require('./routes/rosterImport'));
 app.use('/api/shifts',        require('./routes/shifts'));

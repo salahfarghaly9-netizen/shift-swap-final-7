@@ -3,7 +3,7 @@ const ExcelJS=require('exceljs');const {MongoMemoryReplSet}=require('mongodb-mem
 (async()=>{
  const db=await MongoMemoryReplSet.create({replSet:{count:1}});process.env.MONGODB_URI=db.getUri();process.env.JWT_SECRET=require('crypto').randomBytes(32).toString('hex');process.env.NODE_ENV='test';
  const app=require('../server/index');await mongoose.connection.asPromise();const User=require('../server/models/User'),Shift=require('../server/models/Shift');
- const users=await User.create(['Manager Example','Employee Alpha','Employee Beta'].map((name,i)=>({name,email:['manager','alpha','beta'][i]+'@example.com',password:require('crypto').randomBytes(24).toString('hex'),department:'Example team',role:i?'employee':'manager'})));
+ const users=await User.create(['Manager Example','Employee Alpha','Employee Beta'].map((name,i)=>({name,email:['manager','alpha','beta'][i]+'@example.com',password:require('crypto').randomBytes(24).toString('hex'),department:'Example team',membership:'approved',role:i?'employee':'manager'})));
  const tokens=users.map(u=>jwt.sign({id:u._id},process.env.JWT_SECRET));const auth=i=>({Authorization:'Bearer '+tokens[i]});
  async function book(rows,sheet='Roster'){const wb=new ExcelJS.Workbook();const ws=wb.addWorksheet(sheet);rows.forEach(r=>ws.addRow(r));return Buffer.from(await wb.xlsx.writeBuffer());}
  async function preview(buffer,people={},mappings={}){return request(app).post('/api/imports/preview').set(auth(0)).field('people',JSON.stringify(people)).field('mappings',JSON.stringify(mappings)).attach('file',buffer,'test.xlsx');}

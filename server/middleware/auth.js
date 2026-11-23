@@ -7,6 +7,7 @@ const protect = async (req, res, next) => {
     const decoded = jwt.verify(h.split(' ')[1], process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
     if (!user || !user.isActive) return res.status(401).json({success:false,message:'User not found'});
+    if(user.role!=='manager'&&user.membership!=='approved')return res.status(403).json({success:false,message:'Your account is awaiting manager approval.'});
     req.user = user; next();
   } catch { res.status(401).json({success:false,message:'Invalid or expired token'}); }
 };
