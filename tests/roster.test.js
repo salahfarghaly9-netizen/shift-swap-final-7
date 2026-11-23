@@ -21,9 +21,9 @@ const ExcelJS=require('exceljs');const {MongoMemoryReplSet}=require('mongodb-mem
  const overnight=await book([['Email','Date','Start','End'],['beta@example.com','2026-11-25','01:00','05:00']],'Shifts');p=await preview(overnight);assert.equal(p.body.errors.length,1);
  const formula=await book([['Email','Date','Start','End'],['alpha@example.com','2026-12-01',{formula:'1+1'},'16:00']],'Shifts');p=await preview(formula);assert.ok(p.body.errors.length);
  const unknown=await book([['Email','Date','Start','End'],['missing@example.com','2026-12-01','08:00','16:00']],'Shifts');p=await preview(unknown);assert.ok(p.body.errors.length);
- const shift=own.body.shifts[0];let sw=await request(app).post('/api/swaps').set(auth(1)).send({shiftId:shift._id});assert.equal(sw.status,201);assert.equal((await request(app).post('/api/swaps/'+sw.body.swap._id+'/accept').set(auth(2))).status,200);
- let approved=await request(app).post('/api/swaps/'+sw.body.swap._id+'/approve').set(auth(0));assert.equal(approved.status,200,JSON.stringify(approved.body));assert.equal(String((await Shift.findById(shift._id)).user),String(users[2]._id));assert.equal((await request(app).get('/api/shifts/my?week=2026-11-22').set(auth(1))).body.shifts.length,3);
- assert.equal((await request(app).get('/api/shifts/my?week=2026-11-22').set(auth(2))).body.shifts.length,3);
+ const shift=await Shift.create({user:users[1]._id,date:'2027-01-10',startTime:'08:00',endTime:'12:00',type:'Morning',department:'Example team'});let sw=await request(app).post('/api/swaps').set(auth(1)).send({shiftId:shift._id});assert.equal(sw.status,201);assert.equal((await request(app).post('/api/swaps/'+sw.body.swap._id+'/accept').set(auth(2))).status,200);
+ let approved=await request(app).post('/api/swaps/'+sw.body.swap._id+'/approve').set(auth(0));assert.equal(approved.status,200,JSON.stringify(approved.body));assert.equal(String((await Shift.findById(shift._id)).user),String(users[2]._id));assert.equal((await request(app).get('/api/shifts/my?week=2026-11-22').set(auth(1))).body.shifts.length,4);
+ assert.equal((await request(app).get('/api/shifts/my?week=2026-11-22').set(auth(2))).body.shifts.length,2);
  const tmpl=await request(app).get('/api/imports/template').set(auth(0));assert.equal(tmpl.status,200);
  // New workflow tests, future fictional dates only.
  const exchangeA=await Shift.create({user:users[1]._id,date:'2027-02-01',startTime:'08:00',endTime:'12:00',type:'Morning',department:'Example team'});
