@@ -3,7 +3,7 @@ async function realRegister(){
   const name=document.getElementById('rg-nm').value.trim(),email=document.getElementById('rg-em').value.trim(),
         password=document.getElementById('rg-pw').value,department=document.getElementById('rg-dp').value.trim(),
         managerCode=document.getElementById('rg-mc').value.trim();
-  if(!name||!email||!password||!department)return authErr('Fill name, email, password and department — Complete all fields');
+  if(!name||!email||!password||!department)return authErr('Fill name, email, password and department - Complete all fields');
   authErr('');
   try{
     const body={name,email,password,department};
@@ -19,7 +19,7 @@ function mapUser(u){return {id:u._id,name:u.name,ar:u.name,email:u.email,role:u.
 
 function rTeam(){
   const list=REAL?TEAM:USERS;
-  const tc=document.getElementById('team-count');if(tc&&REAL)tc.textContent=list.filter(u=>u.active).length+' active members — Nextcare Medical Care';
+  const tc=document.getElementById('team-count');if(tc&&REAL)tc.textContent=list.filter(u=>u.active).length+' active members - Nextcare Medical Care';
   document.getElementById('tm-tb').innerHTML=list.map(u=>`
     <tr>
       <td>
@@ -34,9 +34,9 @@ function rTeam(){
       <td><span class="badge ${u.membership!=='approved'&&u.role!=='manager'?'ba':u.active===false?'br':'bg2'}">${u.membership!=='approved'&&u.role!=='manager'?'Pending approval':u.active===false?'Inactive':'Approved'}</span></td>
       <td>${REAL&&ME.role==='manager'&&u.id!==ME.id
         ?(u.membership!=='approved'&&u.role!=='manager'?'<button class="btn bp btn-xs" onclick="approveMember(\''+u.id+'\')">Review and approve</button> <button class="btn btn-xs" onclick="rejectMember(\''+u.id+'\')">Reject</button>':'')+'<button class="btn btn-xs" onclick="toggleRole(\''+u.id+'\',\''+u.role+'\')">'+(u.role==='manager'?'Make employee':'Make manager')+'</button> '
-          +'<button class="btn btn-xs" onclick="resetPw(\''+u.id+'\',\''+esc(u.name.replace(/'/g,"\\'"))+'\')">Reset PW</button> '
+          +'<button class="btn btn-xs" onclick="approveMember(\''+u.id+'\')">Link roster</button> '+'<button class="btn btn-xs" onclick="resetPw(\''+u.id+'\',\''+esc(u.name.replace(/'/g,"\\'"))+'\')">Reset PW</button> '
           +'<button class="btn bd2 btn-xs" onclick="toggleActive(\''+u.id+'\','+(u.active!==false)+')">'+(u.active===false?'Activate':'Deactivate')+'</button>'
-        :'—'}</td>
+        :(REAL&&ME.role==='manager'&&u.id===ME.id?'<button class="btn btn-xs" onclick="approveMember(\''+u.id+'\')">Link own roster</button>':'-')}</td>
     </tr>`).join('');
 }
 
@@ -44,3 +44,5 @@ function rTeam(){
 document.getElementById('rg-mc').style.display='none';
 
 if(REAL&&ME)realReload();
+
+{const script=document.createElement('script');script.src='/team-roster.js';document.body.appendChild(script);}
