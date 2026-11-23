@@ -55,6 +55,7 @@ app.use((err, _req, res, _next) => {
 
 const PORT = parseInt(process.env.PORT,10)||3000;
 if (require.main === module) app.listen(PORT,'0.0.0.0', () => {
+  require('./services/notificationService').startReminders();
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('  🏥  Nextcare — Shift Swap System');
   console.log('  ✏️   Designed by Salah Farghaly');
