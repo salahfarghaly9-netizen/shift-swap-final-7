@@ -25,6 +25,7 @@ if (process.env.NODE_ENV !== 'test') app.use(morgan(process.env.NODE_ENV==='prod
 
 app.use('/api/auth',          require('./routes/auth'));
 app.use('/api/users',         require('./routes/users'));
+app.use('/api/imports', require('./routes/rosterImport'));
 app.use('/api/shifts',        require('./routes/shifts'));
 app.use('/api/swaps',         require('./routes/swapRequests'));
 app.use('/api/notifications', require('./routes/notifications'));
@@ -53,7 +54,7 @@ app.use((err, _req, res, _next) => {
 });
 
 const PORT = parseInt(process.env.PORT,10)||3000;
-app.listen(PORT,'0.0.0.0', () => {
+if (require.main === module) app.listen(PORT,'0.0.0.0', () => {
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('  🏥  Nextcare — Shift Swap System');
   console.log('  ✏️   Designed by Salah Farghaly');

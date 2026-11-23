@@ -7,9 +7,12 @@ router.use(protect);
 
 router.get('/my', async (req, res) => {
   try {
-    const now = new Date(); const mon = new Date(now);
-    mon.setDate(now.getDate()-((now.getDay()+6)%7)); mon.setHours(0,0,0,0);
-    const sun = new Date(mon); sun.setDate(mon.getDate()+6); sun.setHours(23,59,59,999);
+    const requested=req.query.week;
+    if(requested && (!/^\d{4}-\d{2}-\d{2}$/.test(requested)||isNaN(new Date(requested))))return res.status(400).json({success:false,message:'Invalid week date'});
+    const now = requested?new Date(requested+'T00:00:00Z'):new Date();
+    const mon = new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));
+    mon.setUTCDate(mon.getUTCDate()-mon.getUTCDay());
+    const sun = new Date(mon);sun.setUTCDate(mon.getUTCDate()+7);sun.setUTCMilliseconds(-1);
     const shifts = await Shift.find({user:req.user._id,date:{$gte:mon,$lte:sun}}).sort({date:1,startTime:1});
     res.json({success:true, shifts, weekStart:mon, weekEnd:sun});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }

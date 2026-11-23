@@ -8,7 +8,7 @@
  *  - Images/icons → Cache First
  */
 
-const CACHE_NAME    = 'nextcare-v1.2';
+const CACHE_NAME    = 'nextcare-v2-roster';
 const API_CACHE     = 'nextcare-api-v1';
 const OFFLINE_URL   = '/offline.html';
 
@@ -43,7 +43,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(k => k !== CACHE_NAME && k !== API_CACHE)
+          .filter(k => k !== CACHE_NAME)
           .map(k => { console.log('[SW] Deleting old cache:', k); return caches.delete(k); })
       )
     ).then(() => self.clients.claim())
@@ -60,12 +60,12 @@ self.addEventListener('fetch', event => {
 
   // API calls → Network First
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(fetch(request).catch(()=>new Response(JSON.stringify({success:false,message:'You are offline. Reconnect to view your schedule.'}),{status:503,headers:{'Content-Type':'application/json'}}))); 
     return;
   }
 
-  // Everything else → Cache First
-  event.respondWith(cacheFirst(request));
+  // Fetch app updates first. Never serve another account's API data offline.
+  event.respondWith(fetch(request).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(c=>c.put(request,copy));}return response;}).catch(()=>cacheFirst(request))); 
 });
 
 // Cache First strategy

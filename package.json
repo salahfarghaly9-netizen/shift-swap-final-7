@@ -1,24 +1,29 @@
 {
   "name": "nextcare-shift-swap",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Nextcare Shift Swap System - designed by Salah Farghaly",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "seed": "node server/seed.js"
+    "seed": "node server/seed.js",
+    "test": "node tests/roster.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "express-validator": "^7.2.0",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "multer": "^2.5.0"
   },
   "devDependencies": {
-    "mongodb-memory-server": "^11.4.0"
+    "@playwright/test": "^1.65.1",
+    "mongodb-memory-server": "^11.4.0",
+    "supertest": "^7.3.2"
   }
 }

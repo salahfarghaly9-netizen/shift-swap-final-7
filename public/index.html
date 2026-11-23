@@ -916,6 +916,7 @@ body {
 .dprev summary { font-size:12px; color:var(--tx2); cursor:pointer; font-weight:600; }
 .dprev .db { margin-top:10px; }
 </style>
+<link rel="stylesheet" href="/roster.css">
 </head>
 <body>
 
@@ -1049,10 +1050,10 @@ body {
         <div class="pg on" id="pg-dash">
           <div class="ph"><h2 id="grt">Welcome 👋</h2><p id="gsb">Today's overview</p></div>
           <div class="sts">
-            <div class="st sb"><div class="sl">My Shifts This Week</div><div class="sv">5</div><div class="ss">40h total</div></div>
+            <div class="st sb"><div class="sl">My Shifts This Week</div><div class="sv" id="actual-shifts">0</div><div class="ss" id="actual-hours">0h total</div></div>
             <div class="st sa"><div class="sl">My Open Requests</div><div class="sv" id="dso">0</div><div class="ss">pending</div></div>
             <div class="st sg"><div class="sl">Completed Swaps</div><div class="sv" id="dsc">0</div><div class="ss">all time</div></div>
-            <div class="st sr"><div class="sl">Team Requests</div><div class="sv">5</div><div class="ss">open for you</div></div>
+            <div class="st sr"><div class="sl">Team Requests</div><div class="sv" id="actual-open">0</div><div class="ss">open for you</div></div>
           </div>
           <div class="g2">
             <div class="card"><div class="ch"><span class="ct">This Week's Shifts</span><button class="btn btn-sm" onclick="go('shifts')">View all</button></div><div id="d-sh"></div></div>
@@ -1070,13 +1071,13 @@ body {
 
         <!-- MY SHIFTS -->
         <div class="pg" id="pg-shifts">
-          <div class="ph"><h2>My Shifts</h2><p>Your personal schedule this week</p></div>
+          <div class="ph"><h2>جدولي الأسبوعي <span class="muted">/ My schedule</span></h2><p>كل مواعيدك في مكان واحد. اختار الشيفت اللي محتاج تبدله.</p></div><div id="week-cards" class="week-grid"></div>
           <div class="card">
             <div class="ch">
-              <span class="ct">Week of May 5–11, 2026</span>
+              <span class="ct" id="schedule-week">My weekly schedule</span>
               <div style="display:flex;gap:6px">
-                <button class="btn btn-sm">◀ Prev</button>
-                <button class="btn btn-sm">Next ▶</button>
+                <button class="btn btn-sm" onclick="changeWeek(-7)">◀ السابق</button><button class="btn btn-sm" onclick="changeWeek(0)">الأسبوع الحالي</button>
+                <button class="btn btn-sm" onclick="changeWeek(7)">التالي ▶</button>
               </div>
             </div>
             <div style="overflow-x:auto">
@@ -1092,7 +1093,7 @@ body {
         <div class="pg" id="pg-swaps">
           <div class="ph"><h2>Swap Requests</h2><p>Open requests from your team — click Accept to cover a colleague</p></div>
           <div class="flt">
-            <button class="chip on" onclick="flt('all',this)">All (5)</button>
+            <button class="chip on" onclick="flt('all',this)">All</button>
             <button class="chip"    onclick="flt('Urgent',this)">🔴 Urgent</button>
             <button class="chip"    onclick="flt('Medium',this)">🟡 Medium</button>
             <button class="chip"    onclick="flt('Normal',this)">🟢 Normal</button>
@@ -1249,7 +1250,7 @@ body {
 
         <!-- ADD SHIFT (manager) -->
         <div class="pg" id="pg-addshift">
-          <div class="ph"><h2>Add Shift</h2><p>Assign a shift to a team member</p></div>
+          <div class="ph"><h2>إدارة الجدول <span class="muted">/ Schedule studio</span></h2><p>ارفع جدول التيم مرة واحدة بدل إدخال كل شيفت لوحده.</p></div><div id="import-studio"></div><details class="manual-shift"><summary>إضافة شيفت واحد يدويا / Add a single shift</summary>
           <div class="fb" style="max-width:540px">
             <div class="fg"><label class="fl">Team member ★</label><select class="fsl" id="as-user"></select></div>
             <div class="fg"><label class="fl">Date ★</label><input type="date" class="fin" id="as-date"></div>
@@ -1259,6 +1260,7 @@ body {
             <div class="fg"><label class="fl">Department ★</label><input type="text" class="fin" id="as-dept" placeholder="e.g. Precertification"></div>
             <button class="btn bp" onclick="createShift()">＋ Create Shift</button>
           </div>
+          </details>
         </div>
 
         <!-- REPORTS -->
@@ -1854,7 +1856,7 @@ let ME=null,MODE='emp',NPO=false,SWF='all',ATAB='Accepted';
 let extraSwaps=[],STRI=0,TIPI=0;
 
 // ════ REAL MODE (live API) ════════════════════
-let REAL=false, TEAM=[];
+let REAL=false, TEAM=[], WEEK='';
 const TOK_KEY='nc_token';
 const DEMO_ONLY_PAGES=['gcal','notes','planner','trade','bday'];
 function tok(){return localStorage.getItem(TOK_KEY)||'';}
@@ -1871,7 +1873,7 @@ function iniOf(n){const p=String(n||'?').trim().split(/\s+/);return (p[0][0]+(p.
 const COLS=['#0055CC','#16A34A','#D97706','#DC2626','#0891B2','#BE185D','#7C3AED','#1D4ED8'];
 function colOf(id){let h=0;const t=String(id||'x');for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return COLS[h%COLS.length];}
 function mapUser(u){return {id:u._id,name:u.name,ar:u.name,email:u.email,role:u.role,dept:u.department,active:u.isActive!==false,col:colOf(u._id),ini:iniOf(u.name),sw:{s:(u.swapStats&&u.swapStats.sent)||0,r:(u.swapStats&&u.swapStats.received)||0,c:(u.swapStats&&u.swapStats.completed)||0}};}
-function mapShift(s){return {id:s._id,date:new Date(s.date),s:s.startTime,e:s.endTime,t:s.type,st:s.status,dep:s.department};}
+function mapShift(s){return {id:s._id,date:new Date(s.date),s:s.startTime,e:s.endTime,t:s.type,st:s.status,dep:s.department,workMode:s.workMode};}
 function mapSwap(sw){
   const rs=sw.requesterShift||{},rq=sw.requester||{};
   return {id:sw._id,raw:sw,
@@ -1882,7 +1884,7 @@ function mapSwap(sw){
 }
 async function loadReal(){
   const statuses=ME.role==='manager'?['Open','Accepted','Approved','Rejected']:['Open'];
-  const reqs=[api('/shifts/my'),...statuses.map(st=>api('/swaps?status='+st)),api('/swaps?mine=true'),api('/notifications')];
+  const reqs=[api('/shifts/my'+(WEEK?'?week='+WEEK:'')),...statuses.map(st=>api('/swaps?status='+st)),api('/swaps?mine=true'),api('/notifications')];
   if(ME.role==='manager')reqs.push(api('/users'));
   const res=await Promise.all(reqs);
   const mine=res[0],lists=res.slice(1,1+statuses.length),mySw=res[1+statuses.length],notif=res[2+statuses.length];
@@ -2033,7 +2035,7 @@ function boot(){
 
 function renderAll(){
   rDashSh();rDashSw();rShTb();rSwList();rPost();rHist();rMgrPend();rTeam();rAppr();rReports();rNotifs();renderStr();renderTip();
-  if(REAL){rMgrStats();rAddShift();}
+  if(REAL){rMgrStats();rAddShift();}renderWeek();
 }
 
 // ════ NAVIGATION ══════════════════════════════
@@ -2097,7 +2099,7 @@ function rShTb(){
       <td>${tpB(s.t)}</td>
       <td>${ME.dept}</td>
       <td>${stB(s.st)}</td>
-      <td>${s.st==='Confirmed'?'<button class="btn btn-xs" onclick="go(\'post\')">Offer Swap</button>':'—'}</td>
+      <td>${s.st==='Confirmed'&&s.t!=='AnnualLeave'?'<button class="btn btn-xs" onclick="offerShift(\''+s.id+'\')">Offer Swap</button>':'—'}</td>
     </tr>`).join('');
 }
 
@@ -2152,7 +2154,7 @@ async function withdrawSw(id){
 
 function rPost(){
   document.getElementById('p-sh').innerHTML='<option value="">— Choose a shift to offer —</option>'+
-    MY_SH.filter(s=>s.st==='Confirmed').map((s,i)=>`<option value="${i}">${fd(s.date)} · ${s.s}–${s.e} (${s.t})</option>`).join('');
+    MY_SH.map((s,i)=>({...s,originalIndex:i})).filter(s=>s.st==='Confirmed'&&s.t!=='AnnualLeave').map((s)=>`<option value="${s.originalIndex}">${fd(s.date)} · ${s.s}–${s.e} (${s.t})</option>`).join('');
 }
 
 async function postSwap(){
@@ -3174,8 +3176,8 @@ function initTradePage() {
   const sel = document.getElementById('tp-shift');
   if (!sel.options.length) {
     sel.innerHTML = '<option value="">— Select a shift to offer —</option>' +
-      MY_SH.filter(s=>s.st==='Confirmed').map((s,i)=>
-        `<option value="${i}">${fd(s.date)} · ${s.s}–${s.e} (${s.t})</option>`).join('');
+      MY_SH.map((s,i)=>({...s,originalIndex:i})).filter(s=>s.st==='Confirmed'&&s.t!=='AnnualLeave').map((s)=>
+        `<option value="${s.originalIndex}">${fd(s.date)} · ${s.s}–${s.e} (${s.t})</option>`).join('');
   }
   renderMarket();
   renderLeaderboard();
@@ -3696,5 +3698,6 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); 
 })();
 
 </script>
+<script src="/roster.js"></script>
 </body>
 </html>
