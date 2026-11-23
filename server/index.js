@@ -21,7 +21,7 @@ const app = express();
 app.use(cors({origin:'*',methods:['GET','POST','PUT','PATCH','DELETE','OPTIONS'],allowedHeaders:['Content-Type','Authorization']}));
 app.use(express.json({limit:'2mb'}));
 app.use(express.urlencoded({extended:false}));
-if (process.env.NODE_ENV !== 'test') app.use(morgan(process.env.NODE_ENV==='production'?'combined':'dev'));
+if (process.env.NODE_ENV !== 'test') app.use(morgan((tokens,req,res)=>req.path.startsWith('/api/calendar-feed/feed/')?'GET /api/calendar-feed/feed/[redacted] '+res.statusCode:tokens.method(req,res)+' '+tokens.url(req,res)+' '+tokens.status(req,res)));
 
 app.use('/api/auth',          require('./routes/auth'));
 app.use('/api/users',         require('./routes/users'));
@@ -29,6 +29,7 @@ app.use('/api/imports', require('./routes/rosterImport'));
 app.use('/api/shifts',        require('./routes/shifts'));
 app.use('/api/swaps',         require('./routes/swapRequests'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/calendar-feed', require('./routes/calendarFeed'));
 app.use('/api/calendar',      require('./routes/googleCalendar'));
 app.use('/api/shift-notes',   require('./routes/shiftNotes'));
 app.use('/api/trades',        require('./routes/swapTrade'));
