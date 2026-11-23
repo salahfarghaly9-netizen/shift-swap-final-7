@@ -74,7 +74,7 @@ const ExcelJS=require('exceljs');const {MongoMemoryReplSet}=require('mongodb-mem
  assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:false,minRestHours:null})).status,400);
  assert.ok((await request(app).get('/api/notifications').set(auth(2))).body.notifications.some(n=>n.type==='market_offer'));
  async function marketShift(user,date,startTime='08:00',endTime='16:00'){return Shift.create({user:users[user]._id,date,startTime,endTime,type:'Morning',department:'Example team'});}
- async function offer(user,s,date,want,start='08:00',end='16:00'){return request(app).post('/api/market').set(auth(user)).send({shiftId:s._id,start:date+'T'+start,end:date+'T'+end,wantStart:want+'T'+start,wantEnd:want+'T'+end});}
+ async function offer(user,s,date,want,start='08:00',end='16:00'){return request(app).post('/api/market').set(auth(user)).send({autoConsent:true,shiftId:s._id,start:date+'T'+start,end:date+'T'+end,wantStart:want+'T'+start,wantEnd:want+'T'+end});}
  let xa=await marketShift(1,'2027-07-01'),xb=await marketShift(2,'2027-07-03');
  let oa=await offer(1,xa,'2027-07-01','2027-07-03'),ob=await offer(2,xb,'2027-07-03','2027-07-01');assert.equal(ob.body.matched,true);await request(app).post('/api/market/'+oa.body.offer._id+'/withdraw').set(auth(1));const Market=require('../server/models/MarketOffer');assert.equal((await Market.findById(ob.body.offer._id)).status,'Open');await request(app).post('/api/market/'+ob.body.offer._id+'/withdraw').set(auth(2));
  assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:false,minRestHours:8})).status,200);
