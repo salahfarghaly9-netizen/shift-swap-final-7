@@ -5,7 +5,7 @@ const HourBalance = require('../models/HourBalance');
 const Notification= require('../models/Notification');
 const { protect, managerOnly } = require('../middleware/auth');
 const router = express.Router();
-router.use(protect);
+router.use(protect,managerOnly);
 
 async function notify(userId, title, message, tradeId) {
   try { await Notification.create({ user:userId, type:'swap_new', title, message, relatedSwap:tradeId }); } catch(_){}
