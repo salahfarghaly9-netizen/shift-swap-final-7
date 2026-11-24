@@ -17,13 +17,42 @@ const a=await r.post('/api/market').set(auth(1)).send({autoConsent:true,shiftId:
 assert.equal(a.status,201);assert.equal(a.body.offer.autoConsent,true);assert.equal(a.body.matched,false);
 const b=await r.post('/api/market').set(auth(2)).send({autoConsent:true,shiftId:s2._id,start:'2028-02-06T09:00',end:'2028-02-06T12:00',returnOptions:[{start:'2028-02-08T18:00',end:'2028-02-08T23:00'}]});
 assert.equal(b.status,201);assert.equal(b.body.matched,true);
-assert.equal(await Offer.countDocuments({status:'Approved'}),2);
-assert.equal(await Offer.countDocuments({status:'Matched'}),0);
-// Offered segments moved to the other owner.
-assert.ok(await Shift.exists({user:users[2]._id,date:'2028-02-08',startTime:'20:00',endTime:'23:00'}));
-assert.ok(await Shift.exists({user:users[1]._id,date:'2028-02-06',startTime:'09:00',endTime:'12:00'}));
+// A match proposes, not completes: both offers wait for both sides to confirm.
+assert.equal(await Offer.countDocuments({status:'Matched'}),2);
+assert.equal(await Offer.countDocuments({status:'Approved'}),0);
 const notices=(await r.get('/api/notifications').set(auth(1))).body.notifications;
 assert.ok(notices.find(n=>n.type==='market_matched'));
+// One side confirms: still waiting, partner notified.
+const o1=await Offer.findOne({owner:users[1]._id,status:'Matched'});
+const c1=await r.post('/api/market/'+o1._id+'/confirm').set(auth(1)).send({});
+assert.equal(c1.status,200);assert.equal(c1.body.complete,false);
+assert.equal(await Offer.countDocuments({status:'Matched'}),2);
+assert.ok((await r.get('/api/notifications').set(auth(2))).body.notifications.find(n=>n.type==='market_confirm_pending'));
+// Nobody can confirm for the other side.
+assert.equal((await r.post('/api/market/'+o1._id+'/confirm').set(auth(2))).status,409);
+// Second side confirms: the exchange completes and both schedules update.
+const o2=await Offer.findOne({owner:users[2]._id,status:'Matched'});
+const c2=await r.post('/api/market/'+o2._id+'/confirm').set(auth(2)).send({});
+assert.equal(c2.status,200);assert.equal(c2.body.complete,true);
+assert.equal(await Offer.countDocuments({status:'Approved'}),2);
+assert.equal(await Offer.countDocuments({status:'Matched'}),0);
+assert.ok(await Shift.exists({user:users[2]._id,date:'2028-02-08',startTime:'20:00',endTime:'23:00'}));
+assert.ok(await Shift.exists({user:users[1]._id,date:'2028-02-06',startTime:'09:00',endTime:'12:00'}));
+assert.ok((await r.get('/api/notifications').set(auth(1))).body.notifications.find(n=>n.type==='market_approved'));
+
+// 2b. Either side can decline: both offers return to open matching, partner notified.
+const s8=await Shift.create({user:users[1]._id,date:'2028-06-08',startTime:'18:00',endTime:'23:00',type:'Night',department:'Test',workMode:'Office'});
+const s9=await Shift.create({user:users[2]._id,date:'2028-06-06',startTime:'08:00',endTime:'16:00',type:'Morning',department:'Test',workMode:'Home'});
+await r.post('/api/market').set(auth(1)).send({autoConsent:true,shiftId:s8._id,start:'2028-06-08T20:00',end:'2028-06-08T23:00',returnOptions:[{start:'2028-06-06T08:00',end:'2028-06-06T16:00'}]});
+const b2=await r.post('/api/market').set(auth(2)).send({autoConsent:true,shiftId:s9._id,start:'2028-06-06T09:00',end:'2028-06-06T12:00',returnOptions:[{start:'2028-06-08T18:00',end:'2028-06-08T23:00'}]});
+assert.equal(b2.body.matched,true);
+const d1=await Offer.findOne({owner:users[1]._id,status:'Matched'});
+assert.equal((await r.post('/api/market/'+d1._id+'/decline').set(auth(1)).send({})).status,200);
+assert.equal(await Offer.countDocuments({status:'Matched'}),0);
+assert.equal(await Offer.countDocuments({status:'Open'}),2);
+assert.ok((await r.get('/api/notifications').set(auth(2))).body.notifications.find(n=>n.type==='market_declined'));
+// and the reopened pair no longer auto-executes without confirmations
+const re1=await Offer.findOne({owner:users[1]._id,status:'Open'});assert.ok(re1);
 
 // 3. Whole-shift coverage swap completes automatically once accepted.
 const s3=await Shift.create({user:users[1]._id,date:'2028-03-10',startTime:'08:00',endTime:'16:00',type:'Morning',department:'Test',workMode:'Office'});
@@ -57,9 +86,17 @@ await r.post('/api/market').set(auth(1)).send({autoConsent:true,shiftId:s6._id,s
 await r.post('/api/market').set(auth(2)).send({autoConsent:true,shiftId:s7._id,start:'2028-05-06T09:00',end:'2028-05-06T12:00',returnOptions:[{start:'2028-05-08T18:00',end:'2028-05-08T23:00'}]});
 assert.equal(await Offer.countDocuments({status:'Matched'}),2);
 const m=await Offer.findOne({status:'Matched'});
+assert.equal((await r.post('/api/market/'+m._id+'/confirm').set(auth(1))).status,409);
 assert.equal((await r.post('/api/market/'+m._id+'/approve').set(auth(0))).status,200);
 assert.equal(await Offer.countDocuments({status:'Approved'}),4);
 
-console.log('PASS: automatic policy without rest limit, market auto-exchange, coverage and exchange auto-completion, manager mode restored.');
+// 6. Manager weekly digest summarises completed and pending exchanges.
+const wsum=await r.get('/api/market/summary/weekly').set(auth(0));
+assert.equal(wsum.status,200);
+assert.equal(wsum.body.marketExchanges,2);assert.ok(wsum.body.marketHours>0);
+assert.ok(wsum.body.swapsApproved>=2);
+assert.equal((await r.get('/api/market/summary/weekly').set(auth(1))).status,403);
+
+console.log('PASS: automatic policy without rest limit, two-sided match confirmation, decline reopens offers, coverage and exchange auto-completion, weekly digest, manager mode restored.');
 await mongoose.disconnect();await db.stop();
 })().catch(e=>{console.error(e);process.exit(1)});
