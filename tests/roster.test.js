@@ -71,7 +71,8 @@ const ExcelJS=require('exceljs');const {MongoMemoryReplSet}=require('mongodb-mem
  assert.equal((await request(app).post('/api/market/'+marketId+'/approve').set(auth(1))).status,403);
  assert.equal((await request(app).post('/api/market/'+marketId+'/approve').set(auth(0))).status,200);
  const pieces=await Shift.find({date:'2027-06-01'}).sort({startTime:1});assert.equal(pieces.length,3);assert.equal(pieces[0].startTime,'08:00');assert.equal(pieces[0].endTime,'10:00');assert.equal(String(pieces[1].user),String(users[2]._id));assert.equal(pieces[1].workMode,'Office');assert.equal(pieces[2].startTime,'12:00');assert.equal(pieces.reduce((n,s)=>n+s.hours,0),8);
- assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:false,minRestHours:null})).status,400);
+ assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:false,minRestHours:null})).status,200); // warnings-only automatic mode is allowed
+ assert.equal((await request(app).put('/api/market/policy').set(auth(0)).send({managerApproval:true,minRestHours:null})).status,200); // restore manager review for the rest of this test
  assert.ok((await request(app).get('/api/notifications').set(auth(2))).body.notifications.some(n=>n.type==='market_offer'));
  async function marketShift(user,date,startTime='08:00',endTime='16:00'){return Shift.create({user:users[user]._id,date,startTime,endTime,type:'Morning',department:'Example team'});}
  async function offer(user,s,date,want,start='08:00',end='16:00'){return request(app).post('/api/market').set(auth(user)).send({autoConsent:true,shiftId:s._id,start:date+'T'+start,end:date+'T'+end,wantStart:want+'T'+start,wantEnd:want+'T'+end});}
