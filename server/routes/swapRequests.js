@@ -85,7 +85,7 @@ router.post('/', [body('shiftId').notEmpty(), body('urgency').optional().isIn(['
     shift.status='NeedsCoverage'; await shift.save();
     await User.findByIdAndUpdate(req.user._id,{$inc:{'swapStats.sent':1}});
     const populated = await swap.populate([{path:'requester',select:'name department'},{path:'requesterShift'}]);
-    for(const u of await User.find({isActive:true,$or:[{role:'manager'},{membership:'approved'}]}))await notify(u._id,'swap_offer','New exchange offer',req.user.name+' offered a shift for exchange. Review available offers.',swap._id);
+    for(const u of await User.find({isActive:true,department:req.user.department,$or:[{role:'manager'},{membership:'approved'}]}))await notify(u._id,'swap_offer','New exchange offer',req.user.name+' offered a shift for exchange. Review available offers.',swap._id);
     res.status(201).json({success:true, swap:populated});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
