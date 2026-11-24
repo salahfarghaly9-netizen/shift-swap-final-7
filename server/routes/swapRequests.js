@@ -5,8 +5,12 @@ const Shift        = require('../models/Shift');
 const User         = require('../models/User');
 const Notification = require('../models/Notification');
 const { protect, managerOnly } = require('../middleware/auth');
+const Setting = require('../models/AppSetting');
 const router = express.Router();
 router.use(protect);
+
+// One policy governs manager approval for every swap flow (same setting as the hours market).
+async function swapPolicy(){return (await Setting.findOne({key:'marketPolicy'}))?.value||{managerApproval:true,minRestHours:null};}
 
 function visibleSwap(doc,user){if(user.role==='manager')return doc;const s=doc.toObject?doc.toObject():doc;const person=p=>p?{_id:p._id,name:p.name,department:p.department}:null;const shift=p=>p?{_id:p._id,date:p.date,startTime:p.startTime,endTime:p.endTime,type:p.type,department:p.department,workMode:p.workMode,status:p.status}:null;return {_id:s._id,requester:person(s.requester),acceptor:person(s.acceptor),requesterShift:shift(s.requesterShift),acceptorShift:shift(s.acceptorShift),status:s.status,mode:s.mode,reason:s.reason,availableTimes:s.availableTimes,urgency:s.urgency,createdAt:s.createdAt,updatedAt:s.updatedAt};}
 
@@ -92,7 +96,10 @@ router.post('/:id/consent',async(req,res)=>{try{
  const a=await Shift.findById(sw.requesterShift),b=await Shift.findById(sw.acceptorShift);
  if(a&&b&&(cairoStart(a)<=new Date()||cairoStart(b)<=new Date()))return res.status(409).json({success:false,message:'A shift has already started.'});
  if(!a||!b||String(a.user)!==String(sw.requester)||String(b.user)!==String(sw.acceptor)||b.status!=='Confirmed')return res.status(409).json({success:false,message:'Shifts changed. Withdraw and start again.'});
- sw.consentSnapshot={a:{date:a.date,startTime:a.startTime,endTime:a.endTime,workMode:a.workMode,department:a.department,type:a.type},b:{date:b.date,startTime:b.startTime,endTime:b.endTime,workMode:b.workMode,department:b.department,type:b.type}};sw.status='Accepted';sw.consentAt=new Date();await sw.save();await notify(sw.acceptor,'swap_accepted','Offer approved','The other employee accepted. Waiting for manager approval.',sw._id);
+ sw.consentSnapshot={a:{date:a.date,startTime:a.startTime,endTime:a.endTime,workMode:a.workMode,department:a.department,type:a.type},b:{date:b.date,startTime:b.startTime,endTime:b.endTime,workMode:b.workMode,department:b.department,type:b.type}};sw.status='Accepted';sw.consentAt=new Date();await sw.save();
+ const cfg=await swapPolicy();
+ if(!cfg.managerApproval){try{await executeSwap(sw._id,null,'');await notify(sw.requester,'swap_approved','Swap completed ✓','Both sides agreed — the exchange completed automatically and both schedules are updated.',sw._id);await notify(sw.acceptor,'swap_approved','Swap completed ✓','Both sides agreed — the exchange completed automatically and both schedules are updated.',sw._id);return res.json({success:true,auto:true});}catch(_){/* falls back to manager review */}}
+ await notify(sw.acceptor,'swap_accepted','Offer approved','The other employee accepted. Waiting for manager approval.',sw._id);
  res.json({success:true});}catch(e){res.status(400).json({success:false,message:e.message});}});
 
 router.post('/:id/accept', async (req, res) => {
@@ -116,9 +123,11 @@ router.post('/:id/accept', async (req, res) => {
     }
     const update=await SwapRequest.updateOne({_id:swap._id,status:'Open'},{$set:{acceptor:req.user._id,status:'Accepted'}});
     if(!update.modifiedCount)return res.status(409).json({success:false,message:'Request changed; refresh.'});
+    await User.findByIdAndUpdate(req.user._id,{$inc:{'swapStats.received':1}});
+    const cfg=await swapPolicy();
+    if(!cfg.managerApproval){try{await executeSwap(swap._id,null,'');await notify(swap.requester._id,'swap_approved','Swap completed ✓',`${req.user.name} accepted your swap — completed automatically and both schedules are updated.`,swap._id);await notify(req.user._id,'swap_approved','Swap completed ✓','You accepted the swap — completed automatically and both schedules are updated.',swap._id);return res.json({success:true, swap, auto:true, message:'Completed automatically — schedules updated'});}catch(_){/* falls back to manager review */}}
     await notify(swap.requester._id,'swap_accepted','Swap Request Accepted',
       `${req.user.name} accepted your swap — awaiting manager approval`,swap._id);
-    await User.findByIdAndUpdate(req.user._id,{$inc:{'swapStats.received':1}});
     res.json({success:true, swap, message:'Accepted — awaiting manager approval'});
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
@@ -136,12 +145,13 @@ router.post('/:id/withdraw', async (req, res) => {
   } catch(err) { res.status(500).json({success:false,message:err.message}); }
 });
 
-router.post('/:id/approve', managerOnly, async (req, res) => {
-  try {
-    const swap = await SwapRequest.findById(req.params.id)
+// Executes an Accepted swap: reassigns the shift(s) inside a transaction. `actor` is the
+// approving manager's user doc, or null when the system auto-completes under policy.
+async function executeSwap(swapId, actor, note){
+    const swap = await SwapRequest.findById(swapId)
       .populate('requesterShift').populate('acceptorShift').populate('requester','name').populate('acceptor','name');
-    if (!swap) return res.status(404).json({success:false,message:'Swap not found'});
-    if (swap.status!=='Accepted') return res.status(400).json({success:false,message:'Swap must be accepted first'});
+    if (!swap){const e=new Error('Swap not found');e.status=404;throw e;}
+    if (swap.status!=='Accepted'){const e=new Error('Swap must be accepted first');e.status=400;throw e;}
     const mongoose = require('mongoose');
     const session = await mongoose.startSession();
     try { await session.withTransaction(async()=>{
@@ -163,17 +173,23 @@ router.post('/:id/approve', managerOnly, async (req, res) => {
       if(candidates.some(x=>overlap(x,shift)))throw new Error('Acceptor already has an overlapping shift.');
       if(other){const mine=await Shift.find({user:current.requester,_id:{$nin:excluded}}).session(session);if(mine.some(x=>overlap(x,other)))throw new Error('Requester already has an overlapping shift.');other.user=current.requester;other.status='Confirmed';await other.save({session});}
       shift.user=target._id;shift.status='Confirmed';await shift.save({session});
-      await require('../models/ScheduleAudit').create([{actor:req.user._id,action:other?'two_way_swap_approved':'coverage_approved',resource:String(current._id),before:[beforeShift,...(beforeOther?[beforeOther]:[])],after:[shift.toObject(),...(other?[other.toObject()]:[])]}],{session});
-      current.status='Approved';current.reviewedBy=req.user._id;current.reviewedAt=new Date();current.reviewNote=req.body.note||'';
+      await require('../models/ScheduleAudit').create([{actor:actor?actor._id:null,action:other?'two_way_swap_approved':'coverage_approved',resource:String(current._id),before:[beforeShift,...(beforeOther?[beforeOther]:[])],after:[shift.toObject(),...(other?[other.toObject()]:[])]}],{session});
+      current.status='Approved';current.reviewedBy=actor?actor._id:null;current.reviewedAt=new Date();current.reviewNote=note||'';
       await current.save({session});
       await User.updateMany({_id:{$in:[swap.requester._id,target._id]}},{$inc:{'swapStats.completed':1}},{session});
     }); } finally { await session.endSession(); }
     swap.status='Approved';
+    return swap;
+}
+
+router.post('/:id/approve', managerOnly, async (req, res) => {
+  try {
+    const swap = await executeSwap(req.params.id, req.user, req.body.note);
     const msg=`Manager ${req.user.name} approved the swap ✓`;
     await notify(swap.requester._id,'swap_approved','Swap Approved',msg,swap._id);
     await notify(swap.acceptor._id,'swap_approved','Swap Approved',msg,swap._id);
     res.json({success:true, swap, message:'Approved — both parties notified'});
-  } catch(err) { res.status(500).json({success:false,message:err.message}); }
+  } catch(err) { res.status(err.status||500).json({success:false,message:err.message}); }
 });
 
 router.post('/:id/reject', managerOnly, async (req, res) => {
